@@ -47,10 +47,8 @@ public class UsuarioController {
 
     @GET
     public Response listUsuarios(){
-
         PanacheQuery<Usuario> query = repository.findAll();
         return Response.ok(query.list()).build();
-
     }
 
 
@@ -64,8 +62,6 @@ public class UsuarioController {
             return Response.noContent().build();
         }
         return Response.status(Response.Status.NOT_FOUND).build();
-
-
     }
 
     @PUT
@@ -79,16 +75,8 @@ public class UsuarioController {
                 ResponseError responseError = ResponseError.createFromValidation(violations);
                 return Response.status(400).entity(responseError).build();
             }
-            user.setDtNascimento(userRequest.getDtNascimento());
-            user.setNome(userRequest.getNome());
-            user.setTipoUsuario(userRequest.getTipoUsuario());
-            user.setEmail(userRequest.getEmail());
-            user.setCpf(userRequest.getCpf());
-            user.setTelefone(userRequest.getTelefone());
-            user.setSenha(userRequest.getSenha());
-            user.setStatusUsuario(userRequest.getStatusUsuario());
-            return Response.ok(user).build();
-
+            CriarUsuarioResponse response = useCase.atualizarUsuario(userRequest, user);
+            return Response.status(Response.Status.OK).entity(response).build();
         }
         return Response.status(Response.Status.NOT_FOUND).build();
     }
