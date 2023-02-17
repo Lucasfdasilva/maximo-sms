@@ -5,8 +5,10 @@ import org.acme.dtos.CadastrarProdutosRequest;
 import org.acme.dtos.CadastrarProdutosResponse;
 import org.acme.dtos.CriarUsuarioRequest;
 import org.acme.dtos.ResponseError;
+import org.acme.entities.Pedidos;
 import org.acme.entities.Produtos;
 import org.acme.entities.Usuario;
+import org.acme.repository.PedidosRepository;
 import org.acme.repository.ProdutosRepository;
 import org.acme.usecase.ProdutosUseCase;
 
@@ -19,25 +21,26 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Set;
 
-@Path("maximosms/adm")
+@Path("maximosms/produtos")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class ProdutosController {
 
     private ProdutosRepository repository;
+    private PedidosRepository pedidosRepository;
     private ProdutosUseCase useCase;
     private Validator validator;
 
     @Inject
-    public ProdutosController(ProdutosRepository repository, ProdutosUseCase useCase, Validator validator) {
+    public ProdutosController(ProdutosRepository repository, ProdutosUseCase useCase, Validator validator, PedidosRepository pedidosRepository) {
         this.repository = repository;
         this.useCase = useCase;
         this.validator = validator;
+        this.pedidosRepository = pedidosRepository;
     }
 
     @POST
     @Transactional
-    @Path("/produtos")
     public Response cadastrarProdutos(CadastrarProdutosRequest request){
         Set<ConstraintViolation<CadastrarProdutosRequest>> violations = validator.validate(request);
         if (!violations.isEmpty()){
@@ -50,7 +53,7 @@ public class ProdutosController {
 
     @PUT
     @Transactional
-    @Path("produtos/{id}")
+    @Path("{id}")
     public Response atualizarProdutos(@PathParam("id") Long id, CadastrarProdutosRequest request){
         Produtos produto = repository.findById(id);
         if (produto != null) {
@@ -66,14 +69,13 @@ public class ProdutosController {
     }
 
     @GET
-    @Path("/produtos")
     public Response listProdutos(){
         PanacheQuery<Produtos> query = repository.findAll();
         return Response.ok(query.list()).build();
     }
     @DELETE
     @Transactional
-    @Path("produtos/{id}")
+    @Path("{id}")
     public Response deleteUsuario(@PathParam("id") Long id){
         Produtos produto = repository.findById(id);
         if (produto != null) {
@@ -82,4 +84,5 @@ public class ProdutosController {
         }
         return Response.status(Response.Status.NOT_FOUND).build();
     }
+
 }
