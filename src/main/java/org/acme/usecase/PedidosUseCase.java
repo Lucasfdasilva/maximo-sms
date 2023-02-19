@@ -5,6 +5,7 @@ import org.acme.dtos.*;
 import org.acme.entities.Pedidos;
 import org.acme.entities.Produtos;
 import org.acme.entities.Usuario;
+import org.acme.exceptions.CoreRuleException;
 import org.acme.repository.PedidosRepository;
 import org.acme.repository.ProdutosRepository;
 import org.acme.repository.UsuarioRepository;
@@ -37,34 +38,41 @@ public class PedidosUseCase {
     }
 
     public PedidosResponse fazerPedido(PedidosRequest request, Usuario cliente, Produtos produto){
-        Float valor = request.getQuantidade()*  produto.getValor().floatValue();
-        PedidosResponse pedidosResponse = PedidosResponse.builder()
-                .cliente(cliente.getNome())
-                .produto(produto.getNome())
-                .quantidade(request.getQuantidade())
-                .messagem(PEDIDO_PENDENTE)
-                .valorTotal(valor)
-                .build();
-        persistirDados(request, cliente, produto);
-        return pedidosResponse;
+       if (request.getQuantidade()<=produto.getEstoque()) {
+           Float valor = request.getQuantidade() * produto.getValor().floatValue();
+           PedidosResponse pedidosResponse = PedidosResponse.builder()
+                   .cliente(cliente.getNome())
+                   .produto(produto.getNome())
+                   .quantidade(request.getQuantidade())
+                   .messagem(PEDIDO_PENDENTE)
+                   .valorTotal(valor)
+                   .build();
+           persistirDados(request, cliente, produto);
+           return pedidosResponse;
+       }
+    //   throw new RuntimeException("Estoque insuficiente");
+        throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ESTOQUE_ERROR));
+//        throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ESTOQUE_ERROR));
     }
 
     public void persistirDados(PedidosRequest request, Usuario cliente, Produtos produto){
         Pedidos pedidos = new Pedidos();
         Float valor = request.getQuantidade()* produto.getValor().floatValue();
-        pedidos.setCliente(cliente.getId());
-        pedidos.setProduto(produto.getId());
+        pedidos.setClienteId(cliente.getId());
+        pedidos.setProdutoId(produto.getId());
         pedidos.setQuantidade(request.getQuantidade());
         pedidos.setDataPedido(LocalDateTime.now());
         pedidos.setValorTotal(valor);
         pedidos.setStatus(PENDENTE);
+        pedidos.setCliente(cliente.getNome());
+        pedidos.setProduto(produto.getNome());
         repository.persist(pedidos);
     }
     public PedidosListResponse listarPedidos(Long clientId, Long pedidoId){
         Pedidos pedido = repository.findById(pedidoId);
-        if (pedido.getCliente().equals(clientId)) {
+        if (pedido.getClienteId().equals(clientId)) {
             Usuario cliente = usuarioRepository.findById(clientId);
-            Produtos produtos = produtosRepository.findById(pedido.getProduto());
+            Produtos produtos = produtosRepository.findById(pedido.getProdutoId());
             PedidosListResponse pedidosListResponse = PedidosListResponse.builder()
                     .idPedido(pedido.getId())
                     .dataPedido(pedido.getDataPedido())
@@ -81,26 +89,30 @@ public class PedidosUseCase {
         return null;
     }
     public PedidosResponse atualizarStatusPedido(AtualizarPedidosRequest request, Pedidos pedidos){
-       Usuario cliente = usuarioRepository.findById(pedidos.getCliente());
-       Produtos produto = produtosRepository.findById(pedidos.getProduto());
-        PedidosResponse pedidosResponse = PedidosResponse.builder()
-                .cliente(cliente.getNome())
-                .produto(produto.getNome())
-                .quantidade(pedidos.getQuantidade())
-                .messagem(PEDIDO_CONFIRMADO)
-                .valorTotal(pedidos.getValorTotal())
-                .dataAprovacao(LocalDateTime.now())
-                .dataRetirada(request.getDataRetirada())
-                .build();
-        atualizarDados(request, pedidos);
-        return pedidosResponse;
+       Usuario cliente = usuarioRepository.findById(pedidos.getClienteId());
+       Produtos produto = produtosRepository.findById(pedidos.getProdutoId());
+       if (pedidos.getQuantidade()<=produto.getEstoque()) {
+           PedidosResponse pedidosResponse = PedidosResponse.builder()
+                   .cliente(cliente.getNome())
+                   .produto(produto.getNome())
+                   .quantidade(pedidos.getQuantidade())
+                   .messagem(PEDIDO_CONFIRMADO)
+                   .valorTotal(pedidos.getValorTotal())
+                   .dataAprovacao(LocalDateTime.now())
+                   .dataRetirada(request.getDataRetirada())
+                   .build();
+           atualizarDados(request, pedidos);
+           return pedidosResponse;
+       }
+       throw new RuntimeException("Estoque insuficiente");
     }
     public void atualizarDados(AtualizarPedidosRequest request, Pedidos pedidos){
-        Usuario cliente = usuarioRepository.findById(pedidos.getCliente());
-        Produtos produto = produtosRepository.findById(pedidos.getProduto());
+        Usuario cliente = usuarioRepository.findById(pedidos.getClienteId());
+        Produtos produto = produtosRepository.findById(pedidos.getProdutoId());
+        produto.setEstoque(produto.getEstoque()-pedidos.getQuantidade());
         Float valor = pedidos.getQuantidade()* produto.getValor().floatValue();
-        pedidos.setCliente(cliente.getId());
-        pedidos.setProduto(produto.getId());
+        pedidos.setClienteId(cliente.getId());
+        pedidos.setProdutoId(produto.getId());
         pedidos.setQuantidade(pedidos.getQuantidade());
         pedidos.setDataPedido(LocalDateTime.now());
         pedidos.setValorTotal(valor);

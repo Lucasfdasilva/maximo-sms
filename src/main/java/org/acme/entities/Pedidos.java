@@ -18,10 +18,10 @@ public class Pedidos {
     private Long id;
 
     @Column(name = "clienteId")
-    private Long cliente;
+    private Long clienteId;
 
     @Column(name = "produtoId")
-    private Long produto;
+    private Long produtoId;
 
     @Column(name = "quantidade")
     private Integer quantidade;
@@ -40,4 +40,10 @@ public class Pedidos {
 
     @Column(name = "dataRetirada")
     private LocalDateTime dataRetirada;
+
+    @Column(name = "cliente")
+    private String cliente;
+
+    @Column(name = "produto")
+    private String produto;
 }
