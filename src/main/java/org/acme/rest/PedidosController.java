@@ -40,26 +40,41 @@ public class PedidosController {
         this.validator = validator;
     }
 
+//    @POST
+//    @Transactional
+//    @Path("{produtoId}")
+//    public Response obterProdutos(@QueryParam("clientId") Long clientId,
+//                                  @PathParam("produtoId") Long produtoId,
+//                                  PedidosRequest request){
+//        Usuario usuario = usuarioRepository.findById(clientId);
+//        Produtos produtos = produtosRepository.findById(produtoId);
+//        Set<ConstraintViolation<PedidosRequest>> violations = validator.validate(request);
+//        if (!violations.isEmpty()){
+//            ResponseError responseError = ResponseError.createFromValidation(violations);
+//            return Response.status(400).entity(responseError).build();
+//        }
+//        PedidosResponse response = useCase.fazerPedido(request, usuario, produtos);
+//        return Response.status(Response.Status.CREATED).entity(response).build();
+//    }
     @POST
     @Transactional
     @Path("{produtoId}")
-    public Response obterProdutos(@QueryParam("clientId") Long clientId,
+    public Response fazerPedido(@QueryParam("clientId") Long clientId,
                                   @PathParam("produtoId") Long produtoId,
                                   PedidosRequest request){
-        Usuario usuario = usuarioRepository.findById(clientId);
-        Produtos produtos = produtosRepository.findById(produtoId);
-        Set<ConstraintViolation<PedidosRequest>> violations = validator.validate(request);
-        if (!violations.isEmpty()){
-            ResponseError responseError = ResponseError.createFromValidation(violations);
-            return Response.status(400).entity(responseError).build();
-        }
-        PedidosResponse response = useCase.fazerPedido(request, usuario, produtos);
+        PedidosResponse response = useCase.fazerPedido(request, clientId, produtoId);
         return Response.status(Response.Status.CREATED).entity(response).build();
     }
 
     @GET
     public Response acompanharPedido(@QueryParam("clientId") Long clientId, @QueryParam("pedidoId") Long pedidoId){
         PedidosListResponse pedidosList = useCase.listarPedidos(clientId, pedidoId);
+        return Response.status(Response.Status.OK).entity(pedidosList).build();
+    }
+    @Path("/listarNew")
+    @GET
+    public Response acompanharPedidoNew(@QueryParam("codigoPedido") String codigoPedido){
+        PedidosListResponse pedidosList = useCase.listarPedidosNew(codigoPedido);
         return Response.status(Response.Status.OK).entity(pedidosList).build();
     }
     @GET

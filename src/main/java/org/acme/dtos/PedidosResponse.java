@@ -1,5 +1,6 @@
 package org.acme.dtos;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,7 +18,10 @@ public class PedidosResponse {
     private Integer quantidade;
     private String messagem;
     private Float valorTotal;
+    @JsonInclude(value = JsonInclude.Include.NON_NULL)
     private LocalDateTime dataAprovacao;
     private String status;
+    @JsonInclude(value = JsonInclude.Include.NON_NULL)
     private LocalDateTime dataRetirada;
+    private String codigoPedido;
 }

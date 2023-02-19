@@ -19,4 +19,5 @@ public class PedidosListResponse {
     private LocalDateTime dataPedido;
     private LocalDateTime dataAprovacao;
     private LocalDateTime dataRetirada;
+    private String codigoPedido;
 }

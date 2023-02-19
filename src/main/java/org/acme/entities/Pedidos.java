@@ -1,5 +1,6 @@
 package org.acme.entities;
 
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -7,6 +8,8 @@ import lombok.Setter;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -35,7 +38,7 @@ public class Pedidos {
     @Column(name = "dataAprovacao")
     private LocalDateTime dataAprovacao;
 
-    @Column(name = "status", length = 1, columnDefinition = "VARCHAR(1)")
+    @Column(name = "status")
     private String status;
 
     @Column(name = "dataRetirada")
@@ -46,4 +49,7 @@ public class Pedidos {
 
     @Column(name = "produto")
     private String produto;
+
+    @Column(name = "codigoPedido")
+    private String codigoPedido;
 }
