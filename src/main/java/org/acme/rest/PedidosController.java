@@ -67,14 +67,8 @@ public class PedidosController {
     }
 
     @GET
-    public Response acompanharPedido(@QueryParam("clientId") Long clientId, @QueryParam("pedidoId") Long pedidoId){
-        PedidosListResponse pedidosList = useCase.listarPedidos(clientId, pedidoId);
-        return Response.status(Response.Status.OK).entity(pedidosList).build();
-    }
-    @Path("/listarNew")
-    @GET
     public Response acompanharPedidoNew(@QueryParam("codigoPedido") String codigoPedido){
-        PedidosListResponse pedidosList = useCase.listarPedidosNew(codigoPedido);
+        PedidosListResponse pedidosList = useCase.listarPedidos(codigoPedido);
         return Response.status(Response.Status.OK).entity(pedidosList).build();
     }
     @GET

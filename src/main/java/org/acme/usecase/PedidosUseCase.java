@@ -13,12 +13,15 @@ import org.acme.repository.UsuarioRepository;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
 import javax.ws.rs.core.Response;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -27,7 +30,7 @@ import java.util.stream.IntStream;
 public class PedidosUseCase {
     private PedidosRepository repository;
     private UsuarioRepository usuarioRepository;
-
+    private Validator validator;
     private ProdutosRepository produtosRepository;
     private static final String PEDIDO_PENDENTE = "Pedido realizado com sucesso, guarde o código do pedido";
     private static final String PENDENTE = "Pendente";
@@ -39,10 +42,11 @@ public class PedidosUseCase {
 
 
     @Inject
-    public PedidosUseCase(PedidosRepository repository, UsuarioRepository usuarioRepository, ProdutosRepository produtosRepository) {
+    public PedidosUseCase(PedidosRepository repository, UsuarioRepository usuarioRepository, ProdutosRepository produtosRepository, Validator validator) {
         this.repository = repository;
         this.usuarioRepository = usuarioRepository;
         this.produtosRepository = produtosRepository;
+        this.validator = validator;
     }
 
     public PedidosResponse fazerPedido(PedidosRequest request, Long clientId, Long produtoId){
@@ -80,30 +84,10 @@ public class PedidosUseCase {
         pedidos.setCodigoPedido(response.getCodigoPedido());
         repository.persist(pedidos);
     }
-    public PedidosListResponse listarPedidos(Long clientId, Long pedidoId){
-        Pedidos pedido = repository.findById(pedidoId);
-        if (pedido.getClienteId().equals(clientId)) {
-            Usuario cliente = usuarioRepository.findById(clientId);
-            Produtos produtos = produtosRepository.findById(pedido.getProdutoId());
-            PedidosListResponse pedidosListResponse = PedidosListResponse.builder()
-                    .idPedido(pedido.getId())
-                    .dataPedido(pedido.getDataPedido())
-                    .dataAprovacao(pedido.getDataAprovacao())
-                    .dataRetirada(pedido.getDataRetirada())
-                    .status(pedido.getStatus())
-                    .valorTotal(pedido.getValorTotal())
-                    .quantidade(pedido.getQuantidade())
-                    .produto(produtos.getNome())
-                    .cliente(cliente.getNome())
-                    .build();
-            return pedidosListResponse;
-        }
-        return null;
-    }
-    public PedidosListResponse listarPedidosNew(String codigoPedido){
+    public PedidosListResponse listarPedidos(String codigoPedido){
         PanacheQuery<Pedidos> pedidosList = repository.listPedidosByCodigo(codigoPedido);
-        String codigo =pedidosList.list().get(0).getCodigoPedido();
-        if (codigo.equals(codigoPedido)) {
+        long array = pedidosList.stream().count();
+        if (array!=0){
             Usuario cliente = usuarioRepository.findById(pedidosList.list().get(0).getClienteId());
             Produtos produtos = produtosRepository.findById(pedidosList.list().get(0).getProdutoId());
             PedidosListResponse pedidosListResponse = PedidosListResponse.builder()
