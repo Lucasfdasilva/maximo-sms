@@ -50,9 +50,8 @@ public class PedidosUseCase {
            persistirDados(request, cliente, produto);
            return pedidosResponse;
        }
-    //   throw new RuntimeException("Estoque insuficiente");
+
         throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ESTOQUE_ERROR));
-//        throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ESTOQUE_ERROR));
     }
 
     public void persistirDados(PedidosRequest request, Usuario cliente, Produtos produto){
@@ -104,7 +103,7 @@ public class PedidosUseCase {
            atualizarDados(request, pedidos);
            return pedidosResponse;
        }
-       throw new RuntimeException("Estoque insuficiente");
+        throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ESTOQUE_ERROR));
     }
     public void atualizarDados(AtualizarPedidosRequest request, Pedidos pedidos){
         Usuario cliente = usuarioRepository.findById(pedidos.getClienteId());
