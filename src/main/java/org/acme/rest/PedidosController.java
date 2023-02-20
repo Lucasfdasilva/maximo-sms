@@ -40,22 +40,6 @@ public class PedidosController {
         this.validator = validator;
     }
 
-//    @POST
-//    @Transactional
-//    @Path("{produtoId}")
-//    public Response obterProdutos(@QueryParam("clientId") Long clientId,
-//                                  @PathParam("produtoId") Long produtoId,
-//                                  PedidosRequest request){
-//        Usuario usuario = usuarioRepository.findById(clientId);
-//        Produtos produtos = produtosRepository.findById(produtoId);
-//        Set<ConstraintViolation<PedidosRequest>> violations = validator.validate(request);
-//        if (!violations.isEmpty()){
-//            ResponseError responseError = ResponseError.createFromValidation(violations);
-//            return Response.status(400).entity(responseError).build();
-//        }
-//        PedidosResponse response = useCase.fazerPedido(request, usuario, produtos);
-//        return Response.status(Response.Status.CREATED).entity(response).build();
-//    }
     @POST
     @Transactional
     @Path("{produtoId}")
@@ -67,15 +51,15 @@ public class PedidosController {
     }
 
     @GET
-    public Response acompanharPedidoNew(@QueryParam("codigoPedido") String codigoPedido){
-        PedidosListResponse pedidosList = useCase.listarPedidos(codigoPedido);
+    public Response acompanharPedido(@QueryParam("codigoPedido") String codigoPedido){
+        PedidosListResponse pedidosList = useCase.listarPedido(codigoPedido);
         return Response.status(Response.Status.OK).entity(pedidosList).build();
     }
     @GET
     @Path("/listar")
     public Response listarPedidos(){
-        PanacheQuery<Pedidos> query = pedidosRepository.findAll();
-        return Response.ok(query.list()).build();
+        List<PedidosListResponse> pedidosList = useCase.listarTodosPedidos();
+        return Response.status(Response.Status.OK).entity(pedidosList).build();
     }
 
     @PUT

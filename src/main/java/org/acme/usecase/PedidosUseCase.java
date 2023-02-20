@@ -84,28 +84,52 @@ public class PedidosUseCase {
         pedidos.setCodigoPedido(response.getCodigoPedido());
         repository.persist(pedidos);
     }
-    public PedidosListResponse listarPedidos(String codigoPedido){
-        PanacheQuery<Pedidos> pedidosList = repository.listPedidosByCodigo(codigoPedido);
-        long array = pedidosList.stream().count();
-        if (array!=0){
-            Usuario cliente = usuarioRepository.findById(pedidosList.list().get(0).getClienteId());
-            Produtos produtos = produtosRepository.findById(pedidosList.list().get(0).getProdutoId());
-            PedidosListResponse pedidosListResponse = PedidosListResponse.builder()
-                    .idPedido(pedidosList.list().get(0).getId())
-                    .dataPedido(pedidosList.list().get(0).getDataPedido())
-                    .dataAprovacao(pedidosList.list().get(0).getDataAprovacao())
-                    .dataRetirada(pedidosList.list().get(0).getDataRetirada())
-                    .status(pedidosList.list().get(0).getStatus())
-                    .valorTotal(pedidosList.list().get(0).getValorTotal())
-                    .quantidade(pedidosList.list().get(0).getQuantidade())
-                    .produto(produtos.getNome())
-                    .cliente(cliente.getNome())
-                    .codigoPedido(pedidosList.list().get(0).getCodigoPedido())
-                    .build();
-            return pedidosListResponse;
+    public PedidosListResponse listarPedido(String codigoPedido){
+            PanacheQuery<Pedidos> pedidosList = repository.listPedidosByCodigo(codigoPedido);
+            long array = pedidosList.stream().count();
+            if (array != 0) {
+                Usuario cliente = usuarioRepository.findById(pedidosList.list().get(0).getClienteId());
+                Produtos produtos = produtosRepository.findById(pedidosList.list().get(0).getProdutoId());
+                PedidosListResponse pedidosListResponse = PedidosListResponse.builder()
+                        .idPedido(pedidosList.list().get(0).getId())
+                        .dataPedido(pedidosList.list().get(0).getDataPedido())
+                        .dataAprovacao(pedidosList.list().get(0).getDataAprovacao())
+                        .dataRetirada(pedidosList.list().get(0).getDataRetirada())
+                        .status(pedidosList.list().get(0).getStatus())
+                        .valorTotal(pedidosList.list().get(0).getValorTotal())
+                        .quantidade(pedidosList.list().get(0).getQuantidade())
+                        .produto(produtos.getNome())
+                        .cliente(cliente.getNome())
+                        .codigoPedido(pedidosList.list().get(0).getCodigoPedido())
+                        .build();
+                return pedidosListResponse;
+            }
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.CODIGO_INVALIDO));
         }
-        throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.CODIGO_INVALIDO));
+    public List<PedidosListResponse> listarTodosPedidos(){
+        PanacheQuery<Pedidos> pedidosList = repository.findAll();
+        int query = (int) pedidosList.stream().count()-1;
+             List<PedidosListResponse> list = new ArrayList<>();
+             for (int i =0; i<=query;i++) {
+                 Usuario cliente = usuarioRepository.findById(pedidosList.list().get(i).getClienteId());
+                 Produtos produtos = produtosRepository.findById(pedidosList.list().get(i).getProdutoId());
+                 PedidosListResponse pedidosListResponse = PedidosListResponse.builder()
+                         .idPedido(pedidosList.list().get(i).getId())
+                         .dataPedido(pedidosList.list().get(i).getDataPedido())
+                         .dataAprovacao(pedidosList.list().get(i).getDataAprovacao())
+                         .dataRetirada(pedidosList.list().get(i).getDataRetirada())
+                         .status(pedidosList.list().get(i).getStatus())
+                         .valorTotal(pedidosList.list().get(i).getValorTotal())
+                         .quantidade(pedidosList.list().get(i).getQuantidade())
+                         .produto(produtos.getNome())
+                         .cliente(cliente.getNome())
+                         .codigoPedido(pedidosList.list().get(i).getCodigoPedido())
+                         .build();
+                 list.add(pedidosListResponse);
+             }
+            return list;
     }
+
     public PedidosResponse atualizarStatusPedido(AtualizarPedidosRequest request, Pedidos pedidos){
        Usuario cliente = usuarioRepository.findById(pedidos.getClienteId());
        Produtos produto = produtosRepository.findById(pedidos.getProdutoId());
