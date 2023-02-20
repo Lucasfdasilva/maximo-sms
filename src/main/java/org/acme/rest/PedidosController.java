@@ -42,9 +42,8 @@ public class PedidosController {
 
     @POST
     @Transactional
-    @Path("{produtoId}")
     public Response fazerPedido(@QueryParam("clientId") Long clientId,
-                                  @PathParam("produtoId") Long produtoId,
+                                  @QueryParam("produtoId") Long produtoId,
                                   PedidosRequest request){
         PedidosResponse response = useCase.fazerPedido(request, clientId, produtoId);
         return Response.status(Response.Status.CREATED).entity(response).build();
@@ -65,17 +64,9 @@ public class PedidosController {
     @PUT
     @Transactional
     @Path("{id}")
-    public Response atualizarPedidos(@PathParam("id") Long id, AtualizarPedidosRequest request){
+    public Response atualizarPedidos(@PathParam("id") Long id, AtualizarPedidosRequest request) {
         Pedidos pedidos = pedidosRepository.findById(id);
-        if (pedidos != null) {
-            Set<ConstraintViolation<AtualizarPedidosRequest>> violations = validator.validate(request);
-            if (!violations.isEmpty()) {
-                ResponseError responseError = ResponseError.createFromValidation(violations);
-                return Response.status(400).entity(responseError).build();
-            }
-            PedidosResponse response = useCase.atualizarStatusPedido(request, pedidos);
-            return Response.status(Response.Status.OK).entity(response).build();
-        }
-        return Response.status(Response.Status.NOT_FOUND).build();
+        PedidosResponse response = useCase.atualizarStatusPedido(request, pedidos);
+        return Response.status(Response.Status.OK).entity(response).build();
     }
 }

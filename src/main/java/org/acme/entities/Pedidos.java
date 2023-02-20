@@ -52,4 +52,7 @@ public class Pedidos {
 
     @Column(name = "codigoPedido")
     private String codigoPedido;
+
+    @Column(name = "dataCancelamento")
+    private LocalDateTime dataCancelamento;
 }

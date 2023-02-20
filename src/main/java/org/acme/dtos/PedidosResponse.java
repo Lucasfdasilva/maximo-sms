@@ -20,6 +20,8 @@ public class PedidosResponse {
     private Float valorTotal;
     @JsonInclude(value = JsonInclude.Include.NON_NULL)
     private LocalDateTime dataAprovacao;
+    @JsonInclude(value = JsonInclude.Include.NON_NULL)
+    private LocalDateTime dataCancelamento;
     private String status;
     @JsonInclude(value = JsonInclude.Include.NON_NULL)
     private LocalDateTime dataRetirada;

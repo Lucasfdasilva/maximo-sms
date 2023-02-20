@@ -50,24 +50,30 @@ public class PedidosUseCase {
     }
 
     public PedidosResponse fazerPedido(PedidosRequest request, Long clientId, Long produtoId){
-        Usuario usuario = usuarioRepository.findById(clientId);
-        Produtos produtos = produtosRepository.findById(produtoId);
-       if (request.getQuantidade()<=produtos.getEstoque()) {
-           Float valor = request.getQuantidade() * produtos.getValor().floatValue();
-           PedidosResponse pedidosResponse = PedidosResponse.builder()
-                   .cliente(usuario.getNome())
-                   .produto(produtos.getNome())
-                   .quantidade(request.getQuantidade())
-                   .messagem(PEDIDO_PENDENTE)
-                   .status(PENDENTE)
-                   .valorTotal(valor)
-                   .codigoPedido(gerarCodigo())
-                   .build();
-           persistirDados(request, usuario, produtos, pedidosResponse);
-           return pedidosResponse;
-       }
+        if (clientId!=null&&produtoId!=null) {
+            if (request.getQuantidade()!=null&&request.getQuantidade()!=0) {
+                Usuario usuario = usuarioRepository.findById(clientId);
+                Produtos produtos = produtosRepository.findById(produtoId);
+                if (request.getQuantidade() <= produtos.getEstoque()) {
+                    Float valor = request.getQuantidade() * produtos.getValor().floatValue();
+                    PedidosResponse pedidosResponse = PedidosResponse.builder()
+                            .cliente(usuario.getNome())
+                            .produto(produtos.getNome())
+                            .quantidade(request.getQuantidade())
+                            .messagem(PEDIDO_PENDENTE)
+                            .status(PENDENTE)
+                            .valorTotal(valor)
+                            .codigoPedido(gerarCodigo())
+                            .build();
+                    persistirDados(request, usuario, produtos, pedidosResponse);
+                    return pedidosResponse;
+                }
 
-        throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ESTOQUE_ERROR));
+                throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ESTOQUE_ERROR));
+            }
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.QUANDITADE_INVALIDA));
+        }
+        throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.CLIENTE_PRODUTO_NAO_ENVIADO));
     }
 
     public void persistirDados(PedidosRequest request, Usuario cliente, Produtos produto, PedidosResponse response){
@@ -85,6 +91,7 @@ public class PedidosUseCase {
         repository.persist(pedidos);
     }
     public PedidosListResponse listarPedido(String codigoPedido){
+        if (codigoPedido!=null) {
             PanacheQuery<Pedidos> pedidosList = repository.listPedidosByCodigo(codigoPedido);
             long array = pedidosList.stream().count();
             if (array != 0) {
@@ -101,10 +108,13 @@ public class PedidosUseCase {
                         .produto(produtos.getNome())
                         .cliente(cliente.getNome())
                         .codigoPedido(pedidosList.list().get(0).getCodigoPedido())
+                        .dataCancelamento(pedidosList.list().get(0).getDataCancelamento())
                         .build();
                 return pedidosListResponse;
             }
             throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.CODIGO_INVALIDO));
+        }
+        throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.CODIGO_NAO_ENVIADO));
         }
     public List<PedidosListResponse> listarTodosPedidos(){
         PanacheQuery<Pedidos> pedidosList = repository.findAll();
@@ -138,11 +148,19 @@ public class PedidosUseCase {
                    .cliente(cliente.getNome())
                    .produto(produto.getNome())
                    .quantidade(pedidos.getQuantidade())
-                   .messagem(PEDIDO_CONFIRMADO)
                    .valorTotal(pedidos.getValorTotal())
-                   .dataAprovacao(LocalDateTime.now())
-                   .dataRetirada(request.getDataRetirada())
+                   .codigoPedido(pedidos.getCodigoPedido())
                    .build();
+           if (request.isPedidoConfirmado()){
+               pedidosResponse.setStatus(CONFIRMADO);
+               pedidosResponse.setMessagem(PEDIDO_CONFIRMADO);
+               pedidosResponse.setDataAprovacao(LocalDateTime.now());
+               pedidosResponse.setDataRetirada(request.getDataRetirada());
+           }else {
+               pedidosResponse.setStatus(CANCELADO);
+               pedidosResponse.setMessagem(PEDIDO_CANCELADO);
+               pedidosResponse.setDataCancelamento(LocalDateTime.now());
+           }
            atualizarDados(request, pedidos);
            return pedidosResponse;
        }
@@ -158,9 +176,16 @@ public class PedidosUseCase {
         pedidos.setQuantidade(pedidos.getQuantidade());
         pedidos.setDataPedido(LocalDateTime.now());
         pedidos.setValorTotal(valor);
-        pedidos.setStatus(CONFIRMADO);
-        pedidos.setDataRetirada(request.getDataRetirada());
-        pedidos.setDataAprovacao(LocalDateTime.now());
+        if (request.isPedidoConfirmado()) {
+            pedidos.setStatus(CONFIRMADO);
+            pedidos.setDataRetirada(request.getDataRetirada());
+            pedidos.setDataAprovacao(LocalDateTime.now());
+        } else {
+            pedidos.setStatus(CANCELADO);
+            pedidos.setDataCancelamento(LocalDateTime.now());
+            pedidos.setDataAprovacao(null);
+            pedidos.setDataRetirada(null);
+        }
     }
     public String gerarCodigo(){
         int len = 5;

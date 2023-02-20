@@ -22,5 +22,7 @@ public class PedidosListResponse {
     private LocalDateTime dataAprovacao;
     @JsonInclude(value = JsonInclude.Include.NON_NULL)
     private LocalDateTime dataRetirada;
+    @JsonInclude(value = JsonInclude.Include.NON_NULL)
+    private LocalDateTime dataCancelamento;
     private String codigoPedido;
 }
