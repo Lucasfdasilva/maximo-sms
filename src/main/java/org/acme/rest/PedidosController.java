@@ -25,20 +25,13 @@ import java.util.Set;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class PedidosController {
-    private PedidosRepository pedidosRepository;
-    private UsuarioRepository usuarioRepository;
-    private ProdutosRepository produtosRepository;
+
+
     private PedidosUseCase useCase;
-    private Validator validator;
+
 
     @Inject
-    public PedidosController(PedidosRepository pedidosRepository, UsuarioRepository usuarioRepository, ProdutosRepository produtosRepository, PedidosUseCase useCase, Validator validator) {
-        this.pedidosRepository = pedidosRepository;
-        this.usuarioRepository = usuarioRepository;
-        this.produtosRepository = produtosRepository;
-        this.useCase = useCase;
-        this.validator = validator;
-    }
+    public PedidosController(PedidosUseCase useCase) {this.useCase = useCase;}
 
     @POST
     @Transactional
@@ -65,8 +58,7 @@ public class PedidosController {
     @Transactional
     @Path("{id}")
     public Response atualizarPedidos(@PathParam("id") Long id, AtualizarPedidosRequest request) {
-        Pedidos pedidos = pedidosRepository.findById(id);
-        PedidosResponse response = useCase.atualizarStatusPedido(request, pedidos);
+        PedidosResponse response = useCase.atualizarStatusPedido(request, id);
         return Response.status(Response.Status.OK).entity(response).build();
     }
 }

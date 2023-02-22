@@ -10,6 +10,8 @@ public enum MensagemKeyEnum {
     CODIGO_NAO_ENVIADO("Código do pedido não enviado"),
     CLIENTE_PRODUTO_NAO_ENVIADO("ClienteId ou ProdutoId não recebidos"),
     QUANDITADE_INVALIDA("Quantidade solicitado referente ao produto é inválida, é necessário inserir uma quantidade"),
+    REQUEST_UPDATE_PEDIDO("Caso o pedido seja confirmado, é necessário haver data de retirada, caso cancelado não deve haver data de retirada"),
+    CLIENTE_PRODUTO_INVALIDOS("ClienteId ou ProdutoId são invalidos"),
     CODIGO_INVALIDO("Código do pedido inválido.");
     private String mensagem;
 }

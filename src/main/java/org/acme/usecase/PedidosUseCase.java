@@ -50,30 +50,27 @@ public class PedidosUseCase {
     }
 
     public PedidosResponse fazerPedido(PedidosRequest request, Long clientId, Long produtoId){
-        if (clientId!=null&&produtoId!=null) {
-            if (request.getQuantidade()!=null&&request.getQuantidade()!=0) {
-                Usuario usuario = usuarioRepository.findById(clientId);
-                Produtos produtos = produtosRepository.findById(produtoId);
-                if (request.getQuantidade() <= produtos.getEstoque()) {
-                    Float valor = request.getQuantidade() * produtos.getValor().floatValue();
-                    PedidosResponse pedidosResponse = PedidosResponse.builder()
-                            .cliente(usuario.getNome())
-                            .produto(produtos.getNome())
-                            .quantidade(request.getQuantidade())
-                            .messagem(PEDIDO_PENDENTE)
-                            .status(PENDENTE)
-                            .valorTotal(valor)
-                            .codigoPedido(gerarCodigo())
-                            .build();
-                    persistirDados(request, usuario, produtos, pedidosResponse);
-                    return pedidosResponse;
-                }
-
-                throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ESTOQUE_ERROR));
+        validarClienteEProduto(clientId, produtoId);
+        if (request.getQuantidade()!=null&&request.getQuantidade()!=0) {
+            Usuario usuario = usuarioRepository.findById(clientId);
+            Produtos produtos = produtosRepository.findById(produtoId);
+            if (request.getQuantidade() <= produtos.getEstoque()) {
+                Float valor = request.getQuantidade() * produtos.getValor().floatValue();
+                PedidosResponse pedidosResponse = PedidosResponse.builder()
+                        .cliente(usuario.getNome())
+                        .produto(produtos.getNome())
+                        .quantidade(request.getQuantidade())
+                        .messagem(PEDIDO_PENDENTE)
+                        .status(PENDENTE)
+                        .valorTotal(valor)
+                        .codigoPedido(gerarCodigo())
+                        .build();
+                persistirDados(request, usuario, produtos, pedidosResponse);
+                return pedidosResponse;
             }
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.QUANDITADE_INVALIDA));
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ESTOQUE_ERROR));
         }
-        throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.CLIENTE_PRODUTO_NAO_ENVIADO));
+        throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.QUANDITADE_INVALIDA));
     }
 
     public void persistirDados(PedidosRequest request, Usuario cliente, Produtos produto, PedidosResponse response){
@@ -140,51 +137,61 @@ public class PedidosUseCase {
             return list;
     }
 
-    public PedidosResponse atualizarStatusPedido(AtualizarPedidosRequest request, Pedidos pedidos){
-       Usuario cliente = usuarioRepository.findById(pedidos.getClienteId());
-       Produtos produto = produtosRepository.findById(pedidos.getProdutoId());
-       if (pedidos.getQuantidade()<=produto.getEstoque()) {
-           PedidosResponse pedidosResponse = PedidosResponse.builder()
-                   .cliente(cliente.getNome())
-                   .produto(produto.getNome())
-                   .quantidade(pedidos.getQuantidade())
-                   .valorTotal(pedidos.getValorTotal())
-                   .codigoPedido(pedidos.getCodigoPedido())
-                   .build();
-           if (request.isPedidoConfirmado()){
-               pedidosResponse.setStatus(CONFIRMADO);
-               pedidosResponse.setMessagem(PEDIDO_CONFIRMADO);
-               pedidosResponse.setDataAprovacao(LocalDateTime.now());
-               pedidosResponse.setDataRetirada(request.getDataRetirada());
-           }else {
-               pedidosResponse.setStatus(CANCELADO);
-               pedidosResponse.setMessagem(PEDIDO_CANCELADO);
-               pedidosResponse.setDataCancelamento(LocalDateTime.now());
-           }
-           atualizarDados(request, pedidos);
-           return pedidosResponse;
-       }
-        throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ESTOQUE_ERROR));
-    }
-    public void atualizarDados(AtualizarPedidosRequest request, Pedidos pedidos){
+    public PedidosResponse atualizarStatusPedido(AtualizarPedidosRequest request, Long id){
+        Pedidos pedidos = repository.findById(id);
         Usuario cliente = usuarioRepository.findById(pedidos.getClienteId());
         Produtos produto = produtosRepository.findById(pedidos.getProdutoId());
-        produto.setEstoque(produto.getEstoque()-pedidos.getQuantidade());
-        Float valor = pedidos.getQuantidade()* produto.getValor().floatValue();
-        pedidos.setClienteId(cliente.getId());
-        pedidos.setProdutoId(produto.getId());
-        pedidos.setQuantidade(pedidos.getQuantidade());
-        pedidos.setDataPedido(LocalDateTime.now());
-        pedidos.setValorTotal(valor);
-        if (request.isPedidoConfirmado()) {
-            pedidos.setStatus(CONFIRMADO);
-            pedidos.setDataRetirada(request.getDataRetirada());
-            pedidos.setDataAprovacao(LocalDateTime.now());
+         if (pedidos.getQuantidade()<=produto.getEstoque()) {
+               PedidosResponse pedidosResponse = PedidosResponse.builder()
+                       .cliente(cliente.getNome())
+                       .produto(produto.getNome())
+                       .quantidade(pedidos.getQuantidade())
+                       .valorTotal(pedidos.getValorTotal())
+                       .codigoPedido(pedidos.getCodigoPedido())
+                       .build();
+               if (request.isPedidoConfirmado()){
+                   pedidosResponse.setStatus(CONFIRMADO);
+                   pedidosResponse.setMessagem(PEDIDO_CONFIRMADO);
+                   pedidosResponse.setDataAprovacao(LocalDateTime.now());
+                   pedidosResponse.setDataRetirada(request.getDataRetirada());
+               }else {
+                   pedidosResponse.setStatus(CANCELADO);
+                   pedidosResponse.setMessagem(PEDIDO_CANCELADO);
+                   pedidosResponse.setDataCancelamento(LocalDateTime.now());
+               }
+               atualizarDados(request, pedidos);
+               return pedidosResponse;
+           }
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ESTOQUE_ERROR));
+        }
+    public void atualizarDados(AtualizarPedidosRequest request, Pedidos pedidos){
+        Produtos produto = produtosRepository.findById(pedidos.getProdutoId());
+        if ((request.isPedidoConfirmado()&&request.getDataRetirada()!=null)||(!request.isPedidoConfirmado()&&request.getDataRetirada()==null)) {
+            if (request.isPedidoConfirmado()) {
+                pedidos.setStatus(CONFIRMADO);
+                pedidos.setDataRetirada(request.getDataRetirada());
+                pedidos.setDataAprovacao(LocalDateTime.now());
+                pedidos.setDataCancelamento(null);
+                produto.setEstoque(produto.getEstoque() - pedidos.getQuantidade());
+            } else {
+                pedidos.setStatus(CANCELADO);
+                pedidos.setDataCancelamento(LocalDateTime.now());
+                pedidos.setDataAprovacao(null);
+                pedidos.setDataRetirada(null);
+            }
         } else {
-            pedidos.setStatus(CANCELADO);
-            pedidos.setDataCancelamento(LocalDateTime.now());
-            pedidos.setDataAprovacao(null);
-            pedidos.setDataRetirada(null);
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_UPDATE_PEDIDO));
+        }
+    }
+    public void validarClienteEProduto(Long clientId, Long produtoId){
+        if (clientId==null||produtoId==null) {
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.CLIENTE_PRODUTO_NAO_ENVIADO));
+        } else {
+            Usuario usuario = usuarioRepository.findById(clientId);
+            Produtos produtos = produtosRepository.findById(produtoId);
+            if (usuario == null || produtos == null) {
+                throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.CLIENTE_PRODUTO_INVALIDOS));
+            }
         }
     }
     public String gerarCodigo(){
