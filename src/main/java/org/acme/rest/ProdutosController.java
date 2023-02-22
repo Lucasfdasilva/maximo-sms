@@ -27,26 +27,17 @@ import java.util.Set;
 public class ProdutosController {
 
     private ProdutosRepository repository;
-    private PedidosRepository pedidosRepository;
     private ProdutosUseCase useCase;
-    private Validator validator;
 
     @Inject
-    public ProdutosController(ProdutosRepository repository, ProdutosUseCase useCase, Validator validator, PedidosRepository pedidosRepository) {
+    public ProdutosController(ProdutosRepository repository, ProdutosUseCase useCase) {
         this.repository = repository;
         this.useCase = useCase;
-        this.validator = validator;
-        this.pedidosRepository = pedidosRepository;
     }
 
     @POST
     @Transactional
     public Response cadastrarProdutos(CadastrarProdutosRequest request){
-        Set<ConstraintViolation<CadastrarProdutosRequest>> violations = validator.validate(request);
-        if (!violations.isEmpty()){
-            ResponseError responseError = ResponseError.createFromValidation(violations);
-            return Response.status(400).entity(responseError).build();
-        }
         CadastrarProdutosResponse response = useCase.adicionarProdutos(request);
         return Response.status(Response.Status.CREATED).entity(response).build();
     }
@@ -55,19 +46,9 @@ public class ProdutosController {
     @Transactional
     @Path("{id}")
     public Response atualizarProdutos(@PathParam("id") Long id, CadastrarProdutosRequest request){
-        Produtos produto = repository.findById(id);
-        if (produto != null) {
-            Set<ConstraintViolation<CadastrarProdutosRequest>> violations = validator.validate(request);
-            if (!violations.isEmpty()) {
-                ResponseError responseError = ResponseError.createFromValidation(violations);
-                return Response.status(400).entity(responseError).build();
-            }
-            CadastrarProdutosResponse response = useCase.atualizarProdutos(request, produto);
-            return Response.status(Response.Status.OK).entity(response).build();
-        }
-        return Response.status(Response.Status.NOT_FOUND).build();
+        CadastrarProdutosResponse response = useCase.atualizarProdutos(request, id);
+        return Response.status(Response.Status.OK).entity(response).build();
     }
-
     @GET
     public Response listProdutos(){
         PanacheQuery<Produtos> query = repository.findAll();
@@ -76,13 +57,8 @@ public class ProdutosController {
     @DELETE
     @Transactional
     @Path("{id}")
-    public Response deleteUsuario(@PathParam("id") Long id){
-        Produtos produto = repository.findById(id);
-        if (produto != null) {
-            repository.delete(produto);
-            return Response.noContent().build();
-        }
-        return Response.status(Response.Status.NOT_FOUND).build();
+    public Response deletarProdutos(@PathParam("id") Long id) {
+        useCase.deletarProduto(id);
+        return Response.noContent().build();
     }
-
 }

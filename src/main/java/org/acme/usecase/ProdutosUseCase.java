@@ -1,25 +1,30 @@
 package org.acme.usecase;
 
-import org.acme.dtos.CadastrarProdutosRequest;
-import org.acme.dtos.CadastrarProdutosResponse;
-import org.acme.dtos.CriarUsuarioRequest;
+import org.acme.dtos.*;
 import org.acme.entities.Produtos;
 import org.acme.entities.Usuario;
+import org.acme.exceptions.CoreRuleException;
 import org.acme.repository.ProdutosRepository;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
+import java.util.Set;
 
 @ApplicationScoped
 public class ProdutosUseCase {
 
     private ProdutosRepository repository;
+    private Validator validator;
 
     @Inject
-    public ProdutosUseCase(ProdutosRepository repository) {
+    public ProdutosUseCase(ProdutosRepository repository, Validator validator) {
         this.repository = repository;
+        this.validator = validator;
     }
     public CadastrarProdutosResponse adicionarProdutos(CadastrarProdutosRequest request){
+        validarProduto(request);
         CadastrarProdutosResponse cadastrarProdutosResponse = CadastrarProdutosResponse.builder()
                 .nome(request.getNome())
                 .tipo(request.getTipo())
@@ -29,7 +34,9 @@ public class ProdutosUseCase {
         persistirDados(request);
         return cadastrarProdutosResponse;
     }
-    public CadastrarProdutosResponse atualizarProdutos(CadastrarProdutosRequest request, Produtos produto){
+    public CadastrarProdutosResponse atualizarProdutos(CadastrarProdutosRequest request, Long id){
+        Produtos produto = repository.findById(id);
+        validarProduto(request);
         CadastrarProdutosResponse cadastrarProdutosResponse = CadastrarProdutosResponse.builder()
                 .nome(request.getNome())
                 .tipo(request.getTipo())
@@ -54,4 +61,18 @@ public class ProdutosUseCase {
         produto.setEstoque(request.getEstoque());
         produto.setValor(request.getValor());
     }
+    public void deletarProduto(Long id){
+        Produtos produto = repository.findById(id);
+        if (produto!=null) {
+            repository.delete(produto);
+        }
+        throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.PRODUTO_INVALIDO));
+    }
+    public void validarProduto(CadastrarProdutosRequest request){
+        Set<ConstraintViolation<CadastrarProdutosRequest>> violations = validator.validate(request);
+        if (!violations.isEmpty()){
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
+        }
+    }
+
 }
