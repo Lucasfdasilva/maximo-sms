@@ -1,7 +1,6 @@
 package org.acme.usecase;
 
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
-import io.quarkus.panache.common.Parameters;
 import org.acme.dtos.*;
 import org.acme.entities.Pedidos;
 import org.acme.entities.Produtos;
@@ -13,15 +12,11 @@ import org.acme.repository.UsuarioRepository;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
-import javax.ws.rs.core.Response;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 

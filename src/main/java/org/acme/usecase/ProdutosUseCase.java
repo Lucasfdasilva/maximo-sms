@@ -2,7 +2,6 @@ package org.acme.usecase;
 
 import org.acme.dtos.*;
 import org.acme.entities.Produtos;
-import org.acme.entities.Usuario;
 import org.acme.exceptions.CoreRuleException;
 import org.acme.repository.ProdutosRepository;
 

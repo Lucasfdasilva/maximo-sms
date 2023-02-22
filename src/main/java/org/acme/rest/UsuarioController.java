@@ -3,19 +3,15 @@ package org.acme.rest;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import org.acme.dtos.CriarUsuarioRequest;
 import org.acme.dtos.CriarUsuarioResponse;
-import org.acme.dtos.ResponseError;
 import org.acme.entities.Usuario;
 import org.acme.repository.UsuarioRepository;
 import org.acme.usecase.UsuarioUseCase;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.Set;
 
 @Path("maximosms/users")
 @Consumes(MediaType.APPLICATION_JSON)
