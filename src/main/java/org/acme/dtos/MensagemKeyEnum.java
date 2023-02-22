@@ -6,6 +6,8 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum MensagemKeyEnum {
+    REQUEST_ERRO("Request inválido, verificar campos obrigatórios."),
+    USUARIO_INVALIDO("Usuário inválido."),
     ESTOQUE_ERROR("Estoque insuficiente, solicitação cancelada."),
     CODIGO_NAO_ENVIADO("Código do pedido não enviado"),
     CLIENTE_PRODUTO_NAO_ENVIADO("ClienteId ou ProdutoId não recebidos"),

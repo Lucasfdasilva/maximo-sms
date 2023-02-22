@@ -23,24 +23,17 @@ import java.util.Set;
 public class UsuarioController {
 
     private UsuarioRepository repository;
-    private Validator validator;
     private UsuarioUseCase useCase;
 
     @Inject
-    public UsuarioController(UsuarioRepository repository, Validator validator, UsuarioUseCase useCase) {
+    public UsuarioController(UsuarioRepository repository, UsuarioUseCase useCase) {
         this.repository = repository;
-        this.validator = validator;
         this.useCase = useCase;
     }
 
     @POST
     @Transactional
     public Response criarUsuario(CriarUsuarioRequest userRequest){
-        Set<ConstraintViolation<CriarUsuarioRequest>> violations = validator.validate(userRequest);
-        if (!violations.isEmpty()){
-            ResponseError responseError = ResponseError.createFromValidation(violations);
-            return Response.status(400).entity(responseError).build();
-        }
         CriarUsuarioResponse response = useCase.incuirUsuario(userRequest);
         return Response.status(Response.Status.CREATED).entity(response).build();
     }
@@ -56,29 +49,16 @@ public class UsuarioController {
     @Transactional
     @Path("{id}")
     public Response deleteUsuario(@PathParam("id") Long id){
-        Usuario user = repository.findById(id);
-        if (user != null) {
-            repository.delete(user);
+            useCase.deletarUsuario(id);
             return Response.noContent().build();
-        }
-        return Response.status(Response.Status.NOT_FOUND).build();
     }
 
     @PUT
     @Transactional
     @Path("{id}")
     public Response updateUsuario(@PathParam("id") Long id, CriarUsuarioRequest userRequest){
-        Usuario user = repository.findById(id);
-        if (user != null) {
-            Set<ConstraintViolation<CriarUsuarioRequest>> violations = validator.validate(userRequest);
-            if (!violations.isEmpty()){
-                ResponseError responseError = ResponseError.createFromValidation(violations);
-                return Response.status(400).entity(responseError).build();
-            }
-            CriarUsuarioResponse response = useCase.atualizarUsuario(userRequest, user);
+            CriarUsuarioResponse response = useCase.atualizarUsuario(userRequest, id);
             return Response.status(Response.Status.OK).entity(response).build();
-        }
-        return Response.status(Response.Status.NOT_FOUND).build();
     }
 }
 
