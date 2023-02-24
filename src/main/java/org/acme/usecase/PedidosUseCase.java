@@ -23,10 +23,9 @@ import java.util.stream.IntStream;
 
 @ApplicationScoped
 public class PedidosUseCase {
-    private PedidosRepository repository;
-    private UsuarioRepository usuarioRepository;
-    private Validator validator;
-    private ProdutosRepository produtosRepository;
+    private final PedidosRepository repository;
+    private final UsuarioRepository usuarioRepository;
+    private final ProdutosRepository produtosRepository;
     private static final String PEDIDO_PENDENTE = "Pedido realizado com sucesso, guarde o código do pedido";
     private static final String PENDENTE = "Pendente";
     private static final String PEDIDO_CONFIRMADO = "Pedido confirmado com sucesso!";
@@ -34,14 +33,11 @@ public class PedidosUseCase {
     private static final String PEDIDO_CANCELADO = "Pedido cancelado com sucesso!";
     private static final String CANCELADO = "Cancelado";
 
-
-
     @Inject
-    public PedidosUseCase(PedidosRepository repository, UsuarioRepository usuarioRepository, ProdutosRepository produtosRepository, Validator validator) {
+    public PedidosUseCase(PedidosRepository repository, UsuarioRepository usuarioRepository, ProdutosRepository produtosRepository) {
         this.repository = repository;
         this.usuarioRepository = usuarioRepository;
         this.produtosRepository = produtosRepository;
-        this.validator = validator;
     }
 
     public PedidosResponse fazerPedido(PedidosRequest request, Long clientId, Long produtoId){
@@ -131,7 +127,6 @@ public class PedidosUseCase {
              }
             return list;
     }
-
     public PedidosResponse atualizarStatusPedido(AtualizarPedidosRequest request, Long id){
         Pedidos pedidos = repository.findById(id);
         Usuario cliente = usuarioRepository.findById(pedidos.getClienteId());

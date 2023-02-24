@@ -14,8 +14,8 @@ import java.util.Set;
 @ApplicationScoped
 public class ProdutosUseCase {
 
-    private ProdutosRepository repository;
-    private Validator validator;
+    private final ProdutosRepository repository;
+    private final Validator validator;
 
     @Inject
     public ProdutosUseCase(ProdutosRepository repository, Validator validator) {

@@ -6,7 +6,6 @@ import org.acme.dtos.CadastrarProdutosResponse;
 import org.acme.entities.Produtos;
 import org.acme.repository.ProdutosRepository;
 import org.acme.usecase.ProdutosUseCase;
-
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
@@ -18,8 +17,8 @@ import javax.ws.rs.core.Response;
 @Produces(MediaType.APPLICATION_JSON)
 public class ProdutosController {
 
-    private ProdutosRepository repository;
-    private ProdutosUseCase useCase;
+    private final ProdutosRepository repository;
+    private final ProdutosUseCase useCase;
 
     @Inject
     public ProdutosController(ProdutosRepository repository, ProdutosUseCase useCase) {

@@ -1,16 +1,7 @@
 package org.acme.rest;
 
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import org.acme.dtos.*;
-import org.acme.entities.Pedidos;
-import org.acme.entities.Produtos;
-import org.acme.entities.Usuario;
-import org.acme.repository.PedidosRepository;
-import org.acme.repository.ProdutosRepository;
-import org.acme.repository.UsuarioRepository;
 import org.acme.usecase.PedidosUseCase;
-
-
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
@@ -24,7 +15,7 @@ import java.util.List;
 public class PedidosController {
 
 
-    private PedidosUseCase useCase;
+    private final PedidosUseCase useCase;
 
 
     @Inject

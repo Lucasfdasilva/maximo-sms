@@ -6,7 +6,6 @@ import org.acme.dtos.CriarUsuarioResponse;
 import org.acme.entities.Usuario;
 import org.acme.repository.UsuarioRepository;
 import org.acme.usecase.UsuarioUseCase;
-
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
@@ -18,8 +17,8 @@ import javax.ws.rs.core.Response;
 @Produces(MediaType.APPLICATION_JSON)
 public class UsuarioController {
 
-    private UsuarioRepository repository;
-    private UsuarioUseCase useCase;
+    private final UsuarioRepository repository;
+    private final UsuarioUseCase useCase;
 
     @Inject
     public UsuarioController(UsuarioRepository repository, UsuarioUseCase useCase) {

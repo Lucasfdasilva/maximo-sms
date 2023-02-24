@@ -14,8 +14,8 @@ import java.util.Set;
 @ApplicationScoped
 public class UsuarioUseCase {
 
-    private UsuarioRepository repository;
-    private Validator validator;
+    private final UsuarioRepository repository;
+    private final Validator validator;
 
     @Inject
     public UsuarioUseCase(UsuarioRepository repository, Validator validator) {
