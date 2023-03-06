@@ -83,7 +83,8 @@ public class UsuarioUseCase {
         Usuario user = repository.findById(id);
         if (user!=null) {
             repository.delete(user);
+        } else {
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.USUARIO_INVALIDO));
         }
-        throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.USUARIO_INVALIDO));
     }
 }

@@ -64,8 +64,9 @@ public class ProdutosUseCase {
         Produtos produto = repository.findById(id);
         if (produto!=null) {
             repository.delete(produto);
+        } else {
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.PRODUTO_INVALIDO));
         }
-        throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.PRODUTO_INVALIDO));
     }
     public void validarProduto(CadastrarProdutosRequest request){
         Set<ConstraintViolation<CadastrarProdutosRequest>> violations = validator.validate(request);
