@@ -24,7 +24,7 @@ public class UsuarioUseCase {
     }
 
     public CriarUsuarioResponse incuirUsuario(CriarUsuarioRequest request){
-        validarUsuario(request);
+        validarRequest(request);
         CriarUsuarioResponse criarUsuarioResponse = CriarUsuarioResponse.builder()
                 .dtNascimento(request.getDtNascimento())
                 .email(request.getEmail())
@@ -36,24 +36,27 @@ public class UsuarioUseCase {
     }
     public CriarUsuarioResponse atualizarUsuario(CriarUsuarioRequest request,Long id){
         Usuario user = repository.findById(id);
-        if (user!=null) {
-            validarUsuario(request);
-            CriarUsuarioResponse criarUsuarioResponse = CriarUsuarioResponse.builder()
-                    .dtNascimento(request.getDtNascimento())
-                    .email(request.getEmail())
-                    .telefone(request.getTelefone())
-                    .nome(request.getNome())
-                    .build();
-            atualizarDados(request, user);
-            return criarUsuarioResponse;
-        }
-        throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.USUARIO_INVALIDO));
+        validarUsuario(user);
+        validarRequest(request);
+        CriarUsuarioResponse criarUsuarioResponse = CriarUsuarioResponse.builder()
+                .dtNascimento(request.getDtNascimento())
+                .email(request.getEmail())
+                .telefone(request.getTelefone())
+                .nome(request.getNome())
+                .build();
+        atualizarDados(request, user);
+        return criarUsuarioResponse;
     }
 
-    public void validarUsuario(CriarUsuarioRequest request){
+    public void validarRequest(CriarUsuarioRequest request){
         Set<ConstraintViolation<CriarUsuarioRequest>> violations = validator.validate(request);
         if (!violations.isEmpty()){
             throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
+        }
+    }
+    public void validarUsuario(Usuario user){
+        if (user==null) {
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.USUARIO_INVALIDO));
         }
     }
 
@@ -81,10 +84,7 @@ public class UsuarioUseCase {
     }
     public void deletarUsuario(Long id){
         Usuario user = repository.findById(id);
-        if (user!=null) {
-            repository.delete(user);
-        } else {
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.USUARIO_INVALIDO));
-        }
+        validarUsuario(user);
+        repository.delete(user);
     }
 }

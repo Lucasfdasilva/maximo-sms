@@ -23,7 +23,7 @@ public class ProdutosUseCase {
         this.validator = validator;
     }
     public CadastrarProdutosResponse adicionarProdutos(CadastrarProdutosRequest request){
-        validarProduto(request);
+        validarRequest(request);
         CadastrarProdutosResponse cadastrarProdutosResponse = CadastrarProdutosResponse.builder()
                 .nome(request.getNome())
                 .tipo(request.getTipo())
@@ -35,7 +35,8 @@ public class ProdutosUseCase {
     }
     public CadastrarProdutosResponse atualizarProdutos(CadastrarProdutosRequest request, Long id){
         Produtos produto = repository.findById(id);
-        validarProduto(request);
+        validarRequest(request);
+        validarProduto(produto);
         CadastrarProdutosResponse cadastrarProdutosResponse = CadastrarProdutosResponse.builder()
                 .nome(request.getNome())
                 .tipo(request.getTipo())
@@ -62,16 +63,18 @@ public class ProdutosUseCase {
     }
     public void deletarProduto(Long id){
         Produtos produto = repository.findById(id);
-        if (produto!=null) {
-            repository.delete(produto);
-        } else {
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.PRODUTO_INVALIDO));
-        }
+        validarProduto(produto);
+        repository.delete(produto);
     }
-    public void validarProduto(CadastrarProdutosRequest request){
+    public void validarRequest(CadastrarProdutosRequest request){
         Set<ConstraintViolation<CadastrarProdutosRequest>> violations = validator.validate(request);
         if (!violations.isEmpty()){
             throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
+        }
+    }
+    public void validarProduto(Produtos produto){
+        if (produto==null) {
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.PRODUTO_INVALIDO));
         }
     }
 
