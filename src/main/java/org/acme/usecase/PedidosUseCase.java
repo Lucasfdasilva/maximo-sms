@@ -42,26 +42,21 @@ public class PedidosUseCase {
 
     public PedidosResponse fazerPedido(PedidosRequest request, Long clientId, Long produtoId){
         validarClienteEProduto(clientId, produtoId);
-        if (request.getQuantidade()!=null&&request.getQuantidade()!=0) {
-            Usuario usuario = usuarioRepository.findById(clientId);
-            Produtos produtos = produtosRepository.findById(produtoId);
-            if (request.getQuantidade() <= produtos.getEstoque()) {
-                Float valor = request.getQuantidade() * produtos.getValor().floatValue();
-                PedidosResponse pedidosResponse = PedidosResponse.builder()
-                        .cliente(usuario.getNome())
-                        .produto(produtos.getNome())
-                        .quantidade(request.getQuantidade())
-                        .messagem(PEDIDO_PENDENTE)
-                        .status(PENDENTE)
-                        .valorTotal(valor)
-                        .codigoPedido(gerarCodigo())
-                        .build();
-                persistirDados(request, usuario, produtos, pedidosResponse);
-                return pedidosResponse;
-            }
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ESTOQUE_ERROR));
-        }
-        throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.QUANDITADE_INVALIDA));
+        Usuario usuario = usuarioRepository.findById(clientId);
+        Produtos produtos = produtosRepository.findById(produtoId);
+        validarEstoque(request, produtos);
+        Float valor = request.getQuantidade() * produtos.getValor().floatValue();
+        PedidosResponse pedidosResponse = PedidosResponse.builder()
+                .cliente(usuario.getNome())
+                .produto(produtos.getNome())
+                .quantidade(request.getQuantidade())
+                .messagem(PEDIDO_PENDENTE)
+                .status(PENDENTE)
+                .valorTotal(valor)
+                .codigoPedido(gerarCodigo())
+                .build();
+        persistirDados(request, usuario, produtos, pedidosResponse);
+        return pedidosResponse;
     }
 
     public void persistirDados(PedidosRequest request, Usuario cliente, Produtos produto, PedidosResponse response){
@@ -79,31 +74,25 @@ public class PedidosUseCase {
         repository.persist(pedidos);
     }
     public PedidosListResponse listarPedido(String codigoPedido){
-        if (codigoPedido!=null) {
-            PanacheQuery<Pedidos> pedidosList = repository.listPedidosByCodigo(codigoPedido);
-            long array = pedidosList.stream().count();
-            if (array != 0) {
-                Usuario cliente = usuarioRepository.findById(pedidosList.list().get(0).getClienteId());
-                Produtos produtos = produtosRepository.findById(pedidosList.list().get(0).getProdutoId());
-                PedidosListResponse pedidosListResponse = PedidosListResponse.builder()
-                        .idPedido(pedidosList.list().get(0).getId())
-                        .dataPedido(pedidosList.list().get(0).getDataPedido())
-                        .dataAprovacao(pedidosList.list().get(0).getDataAprovacao())
-                        .dataRetirada(pedidosList.list().get(0).getDataRetirada())
-                        .status(pedidosList.list().get(0).getStatus())
-                        .valorTotal(pedidosList.list().get(0).getValorTotal())
-                        .quantidade(pedidosList.list().get(0).getQuantidade())
-                        .produto(produtos.getNome())
-                        .cliente(cliente.getNome())
-                        .codigoPedido(pedidosList.list().get(0).getCodigoPedido())
-                        .dataCancelamento(pedidosList.list().get(0).getDataCancelamento())
-                        .build();
-                return pedidosListResponse;
-            }
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.CODIGO_INVALIDO));
-        }
-        throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.CODIGO_NAO_ENVIADO));
-        }
+        validarCodigoPedido(codigoPedido);
+        PanacheQuery<Pedidos> pedidosList = repository.listPedidosByCodigo(codigoPedido);
+        Usuario cliente = usuarioRepository.findById(pedidosList.list().get(0).getClienteId());
+        Produtos produtos = produtosRepository.findById(pedidosList.list().get(0).getProdutoId());
+
+        return PedidosListResponse.builder()
+                .idPedido(pedidosList.list().get(0).getId())
+                .dataPedido(pedidosList.list().get(0).getDataPedido())
+                .dataAprovacao(pedidosList.list().get(0).getDataAprovacao())
+                .dataRetirada(pedidosList.list().get(0).getDataRetirada())
+                .status(pedidosList.list().get(0).getStatus())
+                .valorTotal(pedidosList.list().get(0).getValorTotal())
+                .quantidade(pedidosList.list().get(0).getQuantidade())
+                .produto(produtos.getNome())
+                .cliente(cliente.getNome())
+                .codigoPedido(pedidosList.list().get(0).getCodigoPedido())
+                .dataCancelamento(pedidosList.list().get(0).getDataCancelamento())
+                .build();
+    }
     public List<PedidosListResponse> listarTodosPedidos(){
         PanacheQuery<Pedidos> pedidosList = repository.findAll();
         int query = (int) pedidosList.stream().count()-1;
@@ -193,5 +182,25 @@ public class PedidosUseCase {
                 .mapToObj(randomIndex -> String.valueOf(chars.charAt(randomIndex)))
                 .collect(Collectors.joining());
         return codigo;
+    }
+
+    public void validarEstoque(PedidosRequest request, Produtos produto){
+        if (request.getQuantidade()==null||request.getQuantidade()==0) {
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.QUANDITADE_INVALIDA));
+        }
+        if (request.getQuantidade() <= produto.getEstoque()) {
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ESTOQUE_ERROR));
+        }
+    }
+
+    public void validarCodigoPedido(String codigoPedido){
+        if (codigoPedido!=null) {
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.CODIGO_NAO_ENVIADO));
+        }
+        PanacheQuery<Pedidos> pedidosList = repository.listPedidosByCodigo(codigoPedido);
+        long array = pedidosList.stream().count();
+        if (array != 0) {
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.CODIGO_INVALIDO));
+        }
     }
 }
