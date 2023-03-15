@@ -1,5 +1,6 @@
 package org.acme.usecase;
 
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import org.acme.dtos.*;
 import org.acme.entities.Empresa;
 import org.acme.entities.Usuario;
@@ -31,8 +32,9 @@ public class UsuarioUseCase {
         this.empresaRepository = empresaRepository;
     }
 
-    public CriarUsuarioResponse incuirUsuario(CriarUsuarioRequest request){
+    public CriarUsuarioResponse incuirUsuario(CriarUsuarioRequest request) {
         validarRequest(request);
+        validarExistenciaUsuario(request);
         CriarUsuarioResponse criarUsuarioResponse = CriarUsuarioResponse.builder()
                 .usuario(UsuarioResponse.builder()
                         .dtNascimento(request.getUsuario().getDtNascimento())
@@ -49,7 +51,8 @@ public class UsuarioUseCase {
         persistirDados(request);
         return criarUsuarioResponse;
     }
-    public AtualizarUsuarioResponse atualizarUsuario(AtualizarUsuarioRequest request,Long id){
+
+    public AtualizarUsuarioResponse atualizarUsuario(AtualizarUsuarioRequest request, Long id) {
         Usuario user = usuarioRepository.findById(id);
         validarUsuario(user);
         validarRequestAtualizar(request);
@@ -67,34 +70,40 @@ public class UsuarioUseCase {
         return criarUsuarioResponse;
     }
 
-    public void validarRequest(CriarUsuarioRequest request){
+    public void validarRequest(CriarUsuarioRequest request) {
         Set<ConstraintViolation<CriarUsuarioRequest>> violations = validator.validate(request);
-        if (!violations.isEmpty()){
+        if (!violations.isEmpty()) {
             throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
         }
     }
-    public void validarRequestAtualizar(AtualizarUsuarioRequest request){
+
+    public void validarRequestAtualizar(AtualizarUsuarioRequest request) {
         Set<ConstraintViolation<AtualizarUsuarioRequest>> violations = validator.validate(request);
-        if (!violations.isEmpty()){
+        if (!violations.isEmpty()) {
             throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
         }
     }
-    public void validarUsuario(Usuario user){
-        if (user==null) {
+
+    public void validarUsuario(Usuario user) {
+        if (user == null) {
             throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.USUARIO_INVALIDO));
         }
     }
 
-    public void persistirDados(CriarUsuarioRequest request){
-
-        Empresa empresa = new Empresa();
-        empresa.setCnpj(request.getEmpresa().getCnpj());
-        empresa.setEmail(request.getEmpresa().getEmail());
-        empresa.setTelefone(request.getEmpresa().getTelefone());
-        empresa.setNomeEmpresa(request.getEmpresa().getNome());
-        empresaRepository.persist(empresa);
-
+    public void persistirDados(CriarUsuarioRequest request) {
         Usuario user = new Usuario();
+        Empresa empresa = new Empresa();
+       Long empresaExiste = validarExistenciaEmpresa(request);
+
+        if (empresaExiste==0) {
+            empresa.setCnpj(request.getEmpresa().getCnpj());
+            empresa.setEmail(request.getEmpresa().getEmail());
+            empresa.setTelefone(request.getEmpresa().getTelefone());
+            empresa.setNomeEmpresa(request.getEmpresa().getNome());
+            empresaRepository.persist(empresa);
+         } else {
+            empresa = empresaRepository.findById(empresaExiste);
+        }
         user.setDtNascimento(request.getUsuario().getDtNascimento());
         user.setNome(request.getUsuario().getNome());
         user.setTipoUsuario(TipoUsuarioEnum.CLIENTE.getCodigo());
@@ -104,7 +113,8 @@ public class UsuarioUseCase {
         user.setEmpresa(empresa);
         usuarioRepository.persist(user);
     }
-    public void atualizarDados(AtualizarUsuarioRequest request, Usuario user){
+
+    public void atualizarDados(AtualizarUsuarioRequest request, Usuario user) {
         user.setDtNascimento(request.getDtNascimento());
         user.setNome(request.getNome());
         user.setTipoUsuario(request.getTipoUsuario());
@@ -113,9 +123,37 @@ public class UsuarioUseCase {
         user.setStatusUsuario(request.getStatusUsuario());
         user.setEmpresa(empresaRepository.findById(request.getEmpresa()));
     }
-    public void deletarUsuario(Long id){
+
+    public void deletarUsuario(Long id) {
         Usuario user = usuarioRepository.findById(id);
         validarUsuario(user);
         usuarioRepository.delete(user);
+    }
+
+    public void validarExistenciaUsuario(CriarUsuarioRequest request) {
+        PanacheQuery<Usuario> usuarios = usuarioRepository.findAll();
+        long contUsuario = usuarios.count();
+        if (contUsuario!=0) {
+            for (int i = 0; i < contUsuario; i++) {
+                String email = usuarios.list().get(i).getEmail();
+                if (email.equals(request.getUsuario().getEmail())) {
+                    throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.EMAIL_ERRO));
+                }
+            }
+        }
+    }
+    public Long validarExistenciaEmpresa(CriarUsuarioRequest request){
+        PanacheQuery<Empresa> empresas = empresaRepository.findAll();
+        long contEmpresa = empresas.count();
+        if (contEmpresa!=0) {
+            for (int i = 0; i < contEmpresa; i++) {
+                String cnpj = empresas.list().get(i).getCnpj();
+                if (cnpj.equals(request.getEmpresa().getCnpj())) {
+                    return empresas.list().get(i).getId();
+                }
+            }
+        }
+        Long ExistenciaFalsa = 0L;
+        return ExistenciaFalsa;
     }
 }
