@@ -89,6 +89,11 @@ public class UsuarioUseCase {
             throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.USUARIO_INVALIDO));
         }
     }
+    public void validarEmpresa(Empresa empresa) {
+        if (empresa == null) {
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.EMPRESA_INVALIDA));
+        }
+    }
 
     public void persistirDados(CriarUsuarioRequest request) {
         Usuario user = new Usuario();
@@ -129,6 +134,12 @@ public class UsuarioUseCase {
         validarUsuario(user);
         usuarioRepository.delete(user);
     }
+    public void deletarEmpresa(Long id) {
+        Empresa empresa = empresaRepository.findById(id);
+        validarEmpresa(empresa);
+        disvincularEmpresa(empresa);
+        empresaRepository.delete(empresa);
+    }
 
     public void validarExistenciaUsuario(CriarUsuarioRequest request) {
         PanacheQuery<Usuario> usuarios = usuarioRepository.findAll();
@@ -155,5 +166,17 @@ public class UsuarioUseCase {
         }
         Long ExistenciaFalsa = 0L;
         return ExistenciaFalsa;
+    }
+
+    public void disvincularEmpresa(Empresa empresa){
+        PanacheQuery<Usuario> usuarios = usuarioRepository.findAll();
+        long contUsuario = usuarios.count();
+        if (contUsuario!=0) {
+            for (int i = 0; i < contUsuario; i++) {
+                if (usuarios.list().get(i).getEmpresa().equals(empresa)){
+                    usuarios.list().get(i).setEmpresa(null);
+                }
+            }
+        }
     }
 }

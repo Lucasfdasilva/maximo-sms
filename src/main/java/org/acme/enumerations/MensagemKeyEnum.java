@@ -8,6 +8,7 @@ import lombok.Getter;
 public enum MensagemKeyEnum {
     REQUEST_ERRO("Request inválido, verificar campos obrigatórios."),
     USUARIO_INVALIDO("Usuário inválido."),
+    EMPRESA_INVALIDA("Empresa inválida."),
     PRODUTO_INVALIDO("Produto não encontrado."),
     ESTOQUE_ERROR("Estoque insuficiente, solicitação cancelada."),
     CODIGO_NAO_ENVIADO("Código do pedido não enviado"),
