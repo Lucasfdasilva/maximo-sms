@@ -5,6 +5,7 @@ import org.acme.dtos.*;
 import org.acme.entities.Pedidos;
 import org.acme.entities.Produtos;
 import org.acme.entities.Usuario;
+import org.acme.enumerations.MensagemKeyEnum;
 import org.acme.enumerations.StatusPedidoEnum;
 import org.acme.enumerations.StatusPedidoMessageEnum;
 import org.acme.exceptions.CoreRuleException;
@@ -14,7 +15,6 @@ import org.acme.repository.UsuarioRepository;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.validation.Validator;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.ArrayList;

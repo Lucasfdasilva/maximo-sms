@@ -1,8 +1,13 @@
 package org.acme.usecase;
 
 import org.acme.dtos.*;
+import org.acme.entities.Empresa;
 import org.acme.entities.Usuario;
+import org.acme.enumerations.MensagemKeyEnum;
+import org.acme.enumerations.StatusUsuarioEnum;
+import org.acme.enumerations.TipoUsuarioEnum;
 import org.acme.exceptions.CoreRuleException;
+import org.acme.repository.EmpresaRepository;
 import org.acme.repository.UsuarioRepository;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -14,34 +19,48 @@ import java.util.Set;
 @ApplicationScoped
 public class UsuarioUseCase {
 
-    private final UsuarioRepository repository;
+    private final UsuarioRepository usuarioRepository;
     private final Validator validator;
 
+    private final EmpresaRepository empresaRepository;
+
     @Inject
-    public UsuarioUseCase(UsuarioRepository repository, Validator validator) {
-        this.repository = repository;
+    public UsuarioUseCase(UsuarioRepository usuarioRepository, Validator validator, EmpresaRepository empresaRepository) {
+        this.usuarioRepository = usuarioRepository;
         this.validator = validator;
+        this.empresaRepository = empresaRepository;
     }
 
     public CriarUsuarioResponse incuirUsuario(CriarUsuarioRequest request){
         validarRequest(request);
         CriarUsuarioResponse criarUsuarioResponse = CriarUsuarioResponse.builder()
-                .dtNascimento(request.getDtNascimento())
-                .email(request.getEmail())
-                .telefone(request.getTelefone())
-                .nome(request.getNome())
+                .usuario(UsuarioResponse.builder()
+                        .dtNascimento(request.getUsuario().getDtNascimento())
+                        .email(request.getUsuario().getEmail())
+                        .nome(request.getUsuario().getNome())
+                        .build())
+                .empresa(EmpresaResponse.builder()
+                        .cnpj(request.getEmpresa().getCnpj())
+                        .email(request.getEmpresa().getEmail())
+                        .nome(request.getEmpresa().getNome())
+                        .telefone(request.getEmpresa().getTelefone())
+                        .build())
                 .build();
         persistirDados(request);
         return criarUsuarioResponse;
     }
-    public CriarUsuarioResponse atualizarUsuario(CriarUsuarioRequest request,Long id){
-        Usuario user = repository.findById(id);
+    public AtualizarUsuarioResponse atualizarUsuario(AtualizarUsuarioRequest request,Long id){
+        Usuario user = usuarioRepository.findById(id);
         validarUsuario(user);
-        validarRequest(request);
-        CriarUsuarioResponse criarUsuarioResponse = CriarUsuarioResponse.builder()
+        validarRequestAtualizar(request);
+        AtualizarUsuarioResponse criarUsuarioResponse = AtualizarUsuarioResponse.builder()
+                .id(user.getId())
+                .senha(request.getSenha())
+                .empresa(empresaRepository.findById(request.getEmpresa()))
                 .dtNascimento(request.getDtNascimento())
                 .email(request.getEmail())
-                .telefone(request.getTelefone())
+                .statusUsuario(request.getStatusUsuario())
+                .tipoUsuario(request.getTipoUsuario())
                 .nome(request.getNome())
                 .build();
         atualizarDados(request, user);
@@ -54,6 +73,12 @@ public class UsuarioUseCase {
             throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
         }
     }
+    public void validarRequestAtualizar(AtualizarUsuarioRequest request){
+        Set<ConstraintViolation<AtualizarUsuarioRequest>> violations = validator.validate(request);
+        if (!violations.isEmpty()){
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
+        }
+    }
     public void validarUsuario(Usuario user){
         if (user==null) {
             throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.USUARIO_INVALIDO));
@@ -61,30 +86,36 @@ public class UsuarioUseCase {
     }
 
     public void persistirDados(CriarUsuarioRequest request){
+
+        Empresa empresa = new Empresa();
+        empresa.setCnpj(request.getEmpresa().getCnpj());
+        empresa.setEmail(request.getEmpresa().getEmail());
+        empresa.setTelefone(request.getEmpresa().getTelefone());
+        empresa.setNomeEmpresa(request.getEmpresa().getNome());
+        empresaRepository.persist(empresa);
+
         Usuario user = new Usuario();
-        user.setDtNascimento(request.getDtNascimento());
-        user.setNome(request.getNome());
-        user.setTipoUsuario(request.getTipoUsuario());
-        user.setEmail(request.getEmail());
-        user.setCpf(request.getCpf());
-        user.setTelefone(request.getTelefone());
-        user.setSenha(request.getSenha());
-        user.setStatusUsuario(request.getStatusUsuario());
-        repository.persist(user);
+        user.setDtNascimento(request.getUsuario().getDtNascimento());
+        user.setNome(request.getUsuario().getNome());
+        user.setTipoUsuario(TipoUsuarioEnum.CLIENTE.getCodigo());
+        user.setEmail(request.getUsuario().getEmail());
+        user.setSenha(request.getUsuario().getSenha());
+        user.setStatusUsuario(StatusUsuarioEnum.ATIVO.getCodigo());
+        user.setEmpresa(empresa);
+        usuarioRepository.persist(user);
     }
-    public void atualizarDados(CriarUsuarioRequest request, Usuario user){
+    public void atualizarDados(AtualizarUsuarioRequest request, Usuario user){
         user.setDtNascimento(request.getDtNascimento());
         user.setNome(request.getNome());
         user.setTipoUsuario(request.getTipoUsuario());
         user.setEmail(request.getEmail());
-        user.setCpf(request.getCpf());
-        user.setTelefone(request.getTelefone());
         user.setSenha(request.getSenha());
         user.setStatusUsuario(request.getStatusUsuario());
+        user.setEmpresa(empresaRepository.findById(request.getEmpresa()));
     }
     public void deletarUsuario(Long id){
-        Usuario user = repository.findById(id);
+        Usuario user = usuarioRepository.findById(id);
         validarUsuario(user);
-        repository.delete(user);
+        usuarioRepository.delete(user);
     }
 }

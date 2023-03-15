@@ -1,9 +1,8 @@
 package org.acme.exceptions;
 
-import org.acme.dtos.MensagemKeyEnum;
+import org.acme.enumerations.MensagemKeyEnum;
 import org.jboss.logging.Logger;
 
-import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.core.Response;
 import org.jboss.resteasy.reactive.server.ServerExceptionMapper;

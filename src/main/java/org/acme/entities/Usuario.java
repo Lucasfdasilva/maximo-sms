@@ -27,25 +27,16 @@ public class Usuario extends PanacheEntityBase {
     @Column(name = "senha")
     private String senha;
 
-    @Column(name = "telefone")
-    private String telefone;
-
     @Column(name = "dtnascimento")
     private String dtNascimento;
 
-    @Column(name = "cpf")
-    private String cpf;
+    @ManyToOne
+    @JoinColumn(name = "empresa_id")
+    private Empresa empresa;
 
-    //    Tipo de usuário:
-//    1-Cliente
-//    2-Adm
     @Column(name = "tipousuario")
-    private Integer tipoUsuario;
+    private short tipoUsuario;
 
-    //    Status de usuário:
-//    1- Ativo
-//    2- Desativado
-//    3- Bloqueado
     @Column(name = "statususuario")
-    private Integer statusUsuario;
+    private short statusUsuario;
 }

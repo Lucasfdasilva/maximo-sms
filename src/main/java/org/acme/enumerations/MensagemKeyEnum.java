@@ -1,4 +1,4 @@
-package org.acme.dtos;
+package org.acme.enumerations;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

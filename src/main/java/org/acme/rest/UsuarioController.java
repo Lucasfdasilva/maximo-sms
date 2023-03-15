@@ -1,6 +1,8 @@
 package org.acme.rest;
 
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
+import org.acme.dtos.AtualizarUsuarioRequest;
+import org.acme.dtos.AtualizarUsuarioResponse;
 import org.acme.dtos.CriarUsuarioRequest;
 import org.acme.dtos.CriarUsuarioResponse;
 import org.acme.entities.Usuario;
@@ -51,8 +53,8 @@ public class UsuarioController {
     @PUT
     @Transactional
     @Path("{id}")
-    public Response updateUsuario(@PathParam("id") Long id, CriarUsuarioRequest userRequest){
-            CriarUsuarioResponse response = useCase.atualizarUsuario(userRequest, id);
+    public Response updateUsuario(@PathParam("id") Long id, AtualizarUsuarioRequest userRequest){
+            AtualizarUsuarioResponse response = useCase.atualizarUsuario(userRequest, id);
             return Response.status(Response.Status.OK).entity(response).build();
     }
 }

@@ -2,6 +2,8 @@ package org.acme.dtos;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import lombok.*;
+import org.acme.enumerations.ErroEnum;
+import org.acme.enumerations.MensagemKeyEnum;
 
 import java.io.Serializable;
 
