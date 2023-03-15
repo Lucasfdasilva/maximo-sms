@@ -5,6 +5,8 @@ import org.acme.dtos.*;
 import org.acme.entities.Pedidos;
 import org.acme.entities.Produtos;
 import org.acme.entities.Usuario;
+import org.acme.enumerations.StatusPedidoEnum;
+import org.acme.enumerations.StatusPedidoMessageEnum;
 import org.acme.exceptions.CoreRuleException;
 import org.acme.repository.PedidosRepository;
 import org.acme.repository.ProdutosRepository;
@@ -26,12 +28,6 @@ public class PedidosUseCase {
     private final PedidosRepository repository;
     private final UsuarioRepository usuarioRepository;
     private final ProdutosRepository produtosRepository;
-    private static final String PEDIDO_PENDENTE = "Pedido realizado com sucesso, guarde o código do pedido";
-    private static final String PENDENTE = "Pendente";
-    private static final String PEDIDO_CONFIRMADO = "Pedido confirmado com sucesso!";
-    private static final String CONFIRMADO = "Confirmado";
-    private static final String PEDIDO_CANCELADO = "Pedido cancelado com sucesso!";
-    private static final String CANCELADO = "Cancelado";
 
     @Inject
     public PedidosUseCase(PedidosRepository repository, UsuarioRepository usuarioRepository, ProdutosRepository produtosRepository) {
@@ -50,8 +46,8 @@ public class PedidosUseCase {
                 .cliente(usuario.getNome())
                 .produto(produtos.getNome())
                 .quantidade(request.getQuantidade())
-                .messagem(PEDIDO_PENDENTE)
-                .status(PENDENTE)
+                .messagem(StatusPedidoMessageEnum.PEDIDO_PENDENTE.getMessage())
+                .status(StatusPedidoEnum.PENDENTE.getMessage())
                 .valorTotal(valor)
                 .codigoPedido(gerarCodigo())
                 .build();
@@ -67,7 +63,7 @@ public class PedidosUseCase {
         pedidos.setQuantidade(request.getQuantidade());
         pedidos.setDataPedido(LocalDateTime.now());
         pedidos.setValorTotal(valor);
-        pedidos.setStatus(PENDENTE);
+        pedidos.setStatus(StatusPedidoEnum.PENDENTE.getMessage());
         pedidos.setCliente(cliente.getNome());
         pedidos.setProduto(produto.getNome());
         pedidos.setCodigoPedido(response.getCodigoPedido());
@@ -129,13 +125,13 @@ public class PedidosUseCase {
                        .codigoPedido(pedidos.getCodigoPedido())
                        .build();
                if (request.isPedidoConfirmado()){
-                   pedidosResponse.setStatus(CONFIRMADO);
-                   pedidosResponse.setMessagem(PEDIDO_CONFIRMADO);
+                   pedidosResponse.setStatus(StatusPedidoEnum.CONFIRMADO.getMessage());
+                   pedidosResponse.setMessagem(StatusPedidoMessageEnum.PEDIDO_CONFIRMADO.getMessage());
                    pedidosResponse.setDataAprovacao(LocalDateTime.now());
                    pedidosResponse.setDataRetirada(request.getDataRetirada());
                }else {
-                   pedidosResponse.setStatus(CANCELADO);
-                   pedidosResponse.setMessagem(PEDIDO_CANCELADO);
+                   pedidosResponse.setStatus(StatusPedidoEnum.CANCELADO.getMessage());
+                   pedidosResponse.setMessagem(StatusPedidoMessageEnum.PEDIDO_CANCELADO.getMessage());
                    pedidosResponse.setDataCancelamento(LocalDateTime.now());
                }
                atualizarDados(request, pedidos);
@@ -147,13 +143,13 @@ public class PedidosUseCase {
         Produtos produto = produtosRepository.findById(pedidos.getProdutoId());
         if ((request.isPedidoConfirmado()&&request.getDataRetirada()!=null)||(!request.isPedidoConfirmado()&&request.getDataRetirada()==null)) {
             if (request.isPedidoConfirmado()) {
-                pedidos.setStatus(CONFIRMADO);
+                pedidos.setStatus(StatusPedidoEnum.CONFIRMADO.getMessage());
                 pedidos.setDataRetirada(request.getDataRetirada());
                 pedidos.setDataAprovacao(LocalDateTime.now());
                 pedidos.setDataCancelamento(null);
                 produto.setEstoque(produto.getEstoque() - pedidos.getQuantidade());
             } else {
-                pedidos.setStatus(CANCELADO);
+                pedidos.setStatus(StatusPedidoEnum.CANCELADO.getMessage());
                 pedidos.setDataCancelamento(LocalDateTime.now());
                 pedidos.setDataAprovacao(null);
                 pedidos.setDataRetirada(null);
@@ -188,18 +184,18 @@ public class PedidosUseCase {
         if (request.getQuantidade()==null||request.getQuantidade()==0) {
             throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.QUANDITADE_INVALIDA));
         }
-        if (request.getQuantidade() <= produto.getEstoque()) {
+        if (request.getQuantidade() > produto.getEstoque()) {
             throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ESTOQUE_ERROR));
         }
     }
 
     public void validarCodigoPedido(String codigoPedido){
-        if (codigoPedido!=null) {
+        if (codigoPedido==null) {
             throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.CODIGO_NAO_ENVIADO));
         }
         PanacheQuery<Pedidos> pedidosList = repository.listPedidosByCodigo(codigoPedido);
         long array = pedidosList.stream().count();
-        if (array != 0) {
+        if (array == 0) {
             throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.CODIGO_INVALIDO));
         }
     }
