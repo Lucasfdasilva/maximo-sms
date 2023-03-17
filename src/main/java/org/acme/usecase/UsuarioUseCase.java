@@ -46,6 +46,7 @@ public class UsuarioUseCase {
                         .email(request.getEmpresa().getEmail())
                         .nome(request.getEmpresa().getNome())
                         .telefone(request.getEmpresa().getTelefone())
+                        .cep(request.getEmpresa().getCep())
                         .build())
                 .build();
         persistirDados(request);
@@ -106,6 +107,7 @@ public class UsuarioUseCase {
             empresa.setEmail(request.getEmpresa().getEmail());
             empresa.setTelefone(request.getEmpresa().getTelefone());
             empresa.setNomeEmpresa(request.getEmpresa().getNome());
+            empresa.setCep(request.getEmpresa().getCep());
             empresaRepository.persist(empresa);
          } else {
             empresa = empresaRepository.findById(validarExistenciaEmpresa(request));
