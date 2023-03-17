@@ -16,6 +16,7 @@ import org.acme.repository.UsuarioRepository;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.security.SecureRandom;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,7 +62,7 @@ public class PedidosVendasUseCase {
         pedidosVendas.setClienteId(cliente.getId());
         pedidosVendas.setProdutoId(produto.getId());
         pedidosVendas.setQuantidade(request.getQuantidade());
-        pedidosVendas.setDataPedido(LocalDateTime.now());
+        pedidosVendas.setDataPedido(LocalDate.now());
         pedidosVendas.setValorTotal(valor);
         pedidosVendas.setStatus(StatusPedidoEnum.PENDENTE.getMessage());
         pedidosVendas.setCliente(cliente.getNome());
@@ -127,12 +128,12 @@ public class PedidosVendasUseCase {
                if (request.isPedidoConfirmado()){
                    pedidosVendasResponse.setStatus(StatusPedidoEnum.CONFIRMADO.getMessage());
                    pedidosVendasResponse.setMessagem(StatusPedidoMessageEnum.PEDIDO_CONFIRMADO.getMessage());
-                   pedidosVendasResponse.setDataAprovacao(LocalDateTime.now());
+                   pedidosVendasResponse.setDataAprovacao(LocalDate.now());
                    pedidosVendasResponse.setDataRetirada(request.getDataRetirada());
                }else {
                    pedidosVendasResponse.setStatus(StatusPedidoEnum.CANCELADO.getMessage());
                    pedidosVendasResponse.setMessagem(StatusPedidoMessageEnum.PEDIDO_CANCELADO.getMessage());
-                   pedidosVendasResponse.setDataCancelamento(LocalDateTime.now());
+                   pedidosVendasResponse.setDataCancelamento(LocalDate.now());
                }
                atualizarDados(request, pedidosVendas);
                return pedidosVendasResponse;
@@ -145,12 +146,12 @@ public class PedidosVendasUseCase {
             if (request.isPedidoConfirmado()) {
                 pedidosVendas.setStatus(StatusPedidoEnum.CONFIRMADO.getMessage());
                 pedidosVendas.setDataRetirada(request.getDataRetirada());
-                pedidosVendas.setDataAprovacao(LocalDateTime.now());
+                pedidosVendas.setDataAprovacao(LocalDate.now());
                 pedidosVendas.setDataCancelamento(null);
                 produto.setEstoque(produto.getEstoque() - pedidosVendas.getQuantidade());
             } else {
                 pedidosVendas.setStatus(StatusPedidoEnum.CANCELADO.getMessage());
-                pedidosVendas.setDataCancelamento(LocalDateTime.now());
+                pedidosVendas.setDataCancelamento(LocalDate.now());
                 pedidosVendas.setDataAprovacao(null);
                 pedidosVendas.setDataRetirada(null);
             }

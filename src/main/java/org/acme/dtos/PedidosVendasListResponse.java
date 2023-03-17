@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -17,12 +17,12 @@ public class PedidosVendasListResponse {
     private String status;
     private Integer quantidade;
     private Float valorTotal;
-    private LocalDateTime dataPedido;
+    private LocalDate dataPedido;
     @JsonInclude(value = JsonInclude.Include.NON_NULL)
-    private LocalDateTime dataAprovacao;
+    private LocalDate dataAprovacao;
     @JsonInclude(value = JsonInclude.Include.NON_NULL)
-    private LocalDateTime dataRetirada;
+    private LocalDate dataRetirada;
     @JsonInclude(value = JsonInclude.Include.NON_NULL)
-    private LocalDateTime dataCancelamento;
+    private LocalDate dataCancelamento;
     private String codigoPedido;
 }

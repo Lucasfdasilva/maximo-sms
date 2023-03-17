@@ -21,6 +21,6 @@ public class EmpresaRequest {
     @NotBlank
     private String cnpj;
 
-    @NotBlank
+    @NotBlank(message = "cep é requerido")
     private String cep;
 }

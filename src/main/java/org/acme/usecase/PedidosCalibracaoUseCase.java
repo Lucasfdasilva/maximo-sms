@@ -6,14 +6,12 @@ import org.acme.enumerations.StatusPedidoEnum;
 import org.acme.enumerations.StatusPedidoMessageEnum;
 import org.acme.repository.EmpresaRepository;
 import org.acme.repository.PedidosCalibracaoRepository;
-import org.acme.repository.ProdutosRepository;
 import org.acme.repository.UsuarioRepository;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.security.SecureRandom;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -67,7 +65,7 @@ public class PedidosCalibracaoUseCase {
 
     public void persistirDados(PedidosCalibracaoRequest request, Usuario cliente, PedidosCalibracaoResponse response){
         PedidosCalibracao pedidosCalibracao = new PedidosCalibracao();
-        pedidosCalibracao.setCodigoPedido("");
+        pedidosCalibracao.setCodigoPedido(response.getCodigoPedido());
         pedidosCalibracao.setDataPedido(LocalDate.now());
         pedidosCalibracao.setDataCalibracao(request.getDataCalibracao());
         pedidosCalibracao.setCliente(cliente);

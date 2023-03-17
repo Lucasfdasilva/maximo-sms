@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -30,16 +30,16 @@ public class PedidosVendas {
     private Float valorTotal;
 
     @Column(name = "dataPedido")
-    private LocalDateTime dataPedido;
+    private LocalDate dataPedido;
 
     @Column(name = "dataAprovacao")
-    private LocalDateTime dataAprovacao;
+    private LocalDate dataAprovacao;
 
     @Column(name = "status")
     private String status;
 
     @Column(name = "dataRetirada")
-    private LocalDateTime dataRetirada;
+    private LocalDate dataRetirada;
 
     @Column(name = "cliente")
     private String cliente;
@@ -51,5 +51,5 @@ public class PedidosVendas {
     private String codigoPedido;
 
     @Column(name = "dataCancelamento")
-    private LocalDateTime dataCancelamento;
+    private LocalDate dataCancelamento;
 }

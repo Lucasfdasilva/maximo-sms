@@ -33,7 +33,7 @@ public class UsuarioUseCase {
     }
 
     public CriarUsuarioResponse incuirUsuario(CriarUsuarioRequest request) {
-        validarRequest(request);
+        validarRequest(request.getEmpresa(), request.getUsuario());
         validarExistenciaUsuario(request);
         CriarUsuarioResponse criarUsuarioResponse = CriarUsuarioResponse.builder()
                 .usuario(UsuarioResponse.builder()
@@ -71,11 +71,16 @@ public class UsuarioUseCase {
         return criarUsuarioResponse;
     }
 
-    public void validarRequest(CriarUsuarioRequest request) {
-        Set<ConstraintViolation<CriarUsuarioRequest>> violations = validator.validate(request);
-        if (!violations.isEmpty()) {
+    public void validarRequest(EmpresaRequest empresaRequest, UsuarioRequest usuarioRequest) {
+        Set<ConstraintViolation<EmpresaRequest>> violationsEmpresa = validator.validate(empresaRequest);
+        if (!violationsEmpresa.isEmpty()) {
             throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
         }
+        Set<ConstraintViolation<UsuarioRequest>> violationsUsuario = validator.validate(usuarioRequest);
+        if (!violationsUsuario.isEmpty()) {
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
+        }
+
     }
 
     public void validarRequestAtualizar(AtualizarUsuarioRequest request) {
