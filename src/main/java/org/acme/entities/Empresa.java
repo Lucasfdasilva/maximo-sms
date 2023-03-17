@@ -22,6 +22,9 @@ public class Empresa {
     @Column(name = "cnpj")
     private String cnpj;
 
+    @Column(name = "cep")
+    private String cep;
+
     @Column(name = "telefone")
     private String telefone;
 

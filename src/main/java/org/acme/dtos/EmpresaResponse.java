@@ -16,4 +16,6 @@ public class EmpresaResponse {
     private String telefone;
 
     private String cnpj;
+
+    private String cep;
 }

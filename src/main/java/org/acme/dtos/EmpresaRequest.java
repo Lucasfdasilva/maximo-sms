@@ -20,4 +20,7 @@ public class EmpresaRequest {
 
     @NotBlank
     private String cnpj;
+
+    @NotBlank
+    private String cep;
 }
