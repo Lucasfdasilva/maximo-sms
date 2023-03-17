@@ -2,14 +2,14 @@ package org.acme.usecase;
 
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import org.acme.dtos.*;
-import org.acme.entities.Pedidos;
+import org.acme.entities.PedidosVendas;
 import org.acme.entities.Produtos;
 import org.acme.entities.Usuario;
 import org.acme.enumerations.MensagemKeyEnum;
 import org.acme.enumerations.StatusPedidoEnum;
 import org.acme.enumerations.StatusPedidoMessageEnum;
 import org.acme.exceptions.CoreRuleException;
-import org.acme.repository.PedidosRepository;
+import org.acme.repository.PedidosVendasRepository;
 import org.acme.repository.ProdutosRepository;
 import org.acme.repository.UsuarioRepository;
 
@@ -24,25 +24,25 @@ import java.util.stream.IntStream;
 
 
 @ApplicationScoped
-public class PedidosUseCase {
-    private final PedidosRepository repository;
+public class PedidosVendasUseCase {
+    private final PedidosVendasRepository repository;
     private final UsuarioRepository usuarioRepository;
     private final ProdutosRepository produtosRepository;
 
     @Inject
-    public PedidosUseCase(PedidosRepository repository, UsuarioRepository usuarioRepository, ProdutosRepository produtosRepository) {
+    public PedidosVendasUseCase(PedidosVendasRepository repository, UsuarioRepository usuarioRepository, ProdutosRepository produtosRepository) {
         this.repository = repository;
         this.usuarioRepository = usuarioRepository;
         this.produtosRepository = produtosRepository;
     }
 
-    public PedidosResponse fazerPedido(PedidosRequest request, Long clientId, Long produtoId){
+    public PedidosVendasResponse fazerPedido(PedidosVendasRequest request, Long clientId, Long produtoId){
         validarClienteEProduto(clientId, produtoId);
         Usuario usuario = usuarioRepository.findById(clientId);
         Produtos produtos = produtosRepository.findById(produtoId);
         validarEstoque(request, produtos);
         Float valor = request.getQuantidade() * produtos.getValor().floatValue();
-        PedidosResponse pedidosResponse = PedidosResponse.builder()
+        PedidosVendasResponse pedidosVendasResponse = PedidosVendasResponse.builder()
                 .cliente(usuario.getNome())
                 .produto(produtos.getNome())
                 .quantidade(request.getQuantidade())
@@ -51,31 +51,31 @@ public class PedidosUseCase {
                 .valorTotal(valor)
                 .codigoPedido(gerarCodigo())
                 .build();
-        persistirDados(request, usuario, produtos, pedidosResponse);
-        return pedidosResponse;
+        persistirDados(request, usuario, produtos, pedidosVendasResponse);
+        return pedidosVendasResponse;
     }
 
-    public void persistirDados(PedidosRequest request, Usuario cliente, Produtos produto, PedidosResponse response){
-        Pedidos pedidos = new Pedidos();
+    public void persistirDados(PedidosVendasRequest request, Usuario cliente, Produtos produto, PedidosVendasResponse response){
+        PedidosVendas pedidosVendas = new PedidosVendas();
         Float valor = request.getQuantidade()* produto.getValor().floatValue();
-        pedidos.setClienteId(cliente.getId());
-        pedidos.setProdutoId(produto.getId());
-        pedidos.setQuantidade(request.getQuantidade());
-        pedidos.setDataPedido(LocalDateTime.now());
-        pedidos.setValorTotal(valor);
-        pedidos.setStatus(StatusPedidoEnum.PENDENTE.getMessage());
-        pedidos.setCliente(cliente.getNome());
-        pedidos.setProduto(produto.getNome());
-        pedidos.setCodigoPedido(response.getCodigoPedido());
-        repository.persist(pedidos);
+        pedidosVendas.setClienteId(cliente.getId());
+        pedidosVendas.setProdutoId(produto.getId());
+        pedidosVendas.setQuantidade(request.getQuantidade());
+        pedidosVendas.setDataPedido(LocalDateTime.now());
+        pedidosVendas.setValorTotal(valor);
+        pedidosVendas.setStatus(StatusPedidoEnum.PENDENTE.getMessage());
+        pedidosVendas.setCliente(cliente.getNome());
+        pedidosVendas.setProduto(produto.getNome());
+        pedidosVendas.setCodigoPedido(response.getCodigoPedido());
+        repository.persist(pedidosVendas);
     }
-    public PedidosListResponse listarPedido(String codigoPedido){
+    public PedidosVendasListResponse listarPedido(String codigoPedido){
         validarCodigoPedido(codigoPedido);
-        PanacheQuery<Pedidos> pedidosList = repository.listPedidosByCodigo(codigoPedido);
+        PanacheQuery<PedidosVendas> pedidosList = repository.listPedidosByCodigo(codigoPedido);
         Usuario cliente = usuarioRepository.findById(pedidosList.list().get(0).getClienteId());
         Produtos produtos = produtosRepository.findById(pedidosList.list().get(0).getProdutoId());
 
-        return PedidosListResponse.builder()
+        return PedidosVendasListResponse.builder()
                 .idPedido(pedidosList.list().get(0).getId())
                 .dataPedido(pedidosList.list().get(0).getDataPedido())
                 .dataAprovacao(pedidosList.list().get(0).getDataAprovacao())
@@ -89,14 +89,14 @@ public class PedidosUseCase {
                 .dataCancelamento(pedidosList.list().get(0).getDataCancelamento())
                 .build();
     }
-    public List<PedidosListResponse> listarTodosPedidos(){
-        PanacheQuery<Pedidos> pedidosList = repository.findAll();
+    public List<PedidosVendasListResponse> listarTodosPedidos(){
+        PanacheQuery<PedidosVendas> pedidosList = repository.findAll();
         int query = (int) pedidosList.stream().count()-1;
-             List<PedidosListResponse> list = new ArrayList<>();
+             List<PedidosVendasListResponse> list = new ArrayList<>();
              for (int i =0; i<=query;i++) {
                  Usuario cliente = usuarioRepository.findById(pedidosList.list().get(i).getClienteId());
                  Produtos produtos = produtosRepository.findById(pedidosList.list().get(i).getProdutoId());
-                 PedidosListResponse pedidosListResponse = PedidosListResponse.builder()
+                 PedidosVendasListResponse pedidosVendasListResponse = PedidosVendasListResponse.builder()
                          .idPedido(pedidosList.list().get(i).getId())
                          .dataPedido(pedidosList.list().get(i).getDataPedido())
                          .dataAprovacao(pedidosList.list().get(i).getDataAprovacao())
@@ -108,51 +108,51 @@ public class PedidosUseCase {
                          .cliente(cliente.getNome())
                          .codigoPedido(pedidosList.list().get(i).getCodigoPedido())
                          .build();
-                 list.add(pedidosListResponse);
+                 list.add(pedidosVendasListResponse);
              }
             return list;
     }
-    public PedidosResponse atualizarStatusPedido(AtualizarPedidosRequest request, Long id){
-        Pedidos pedidos = repository.findById(id);
-        Usuario cliente = usuarioRepository.findById(pedidos.getClienteId());
-        Produtos produto = produtosRepository.findById(pedidos.getProdutoId());
-         if (pedidos.getQuantidade()<=produto.getEstoque()) {
-               PedidosResponse pedidosResponse = PedidosResponse.builder()
+    public PedidosVendasResponse atualizarStatusPedido(AtualizarPedidosRequest request, Long id){
+        PedidosVendas pedidosVendas = repository.findById(id);
+        Usuario cliente = usuarioRepository.findById(pedidosVendas.getClienteId());
+        Produtos produto = produtosRepository.findById(pedidosVendas.getProdutoId());
+         if (pedidosVendas.getQuantidade()<=produto.getEstoque()) {
+               PedidosVendasResponse pedidosVendasResponse = PedidosVendasResponse.builder()
                        .cliente(cliente.getNome())
                        .produto(produto.getNome())
-                       .quantidade(pedidos.getQuantidade())
-                       .valorTotal(pedidos.getValorTotal())
-                       .codigoPedido(pedidos.getCodigoPedido())
+                       .quantidade(pedidosVendas.getQuantidade())
+                       .valorTotal(pedidosVendas.getValorTotal())
+                       .codigoPedido(pedidosVendas.getCodigoPedido())
                        .build();
                if (request.isPedidoConfirmado()){
-                   pedidosResponse.setStatus(StatusPedidoEnum.CONFIRMADO.getMessage());
-                   pedidosResponse.setMessagem(StatusPedidoMessageEnum.PEDIDO_CONFIRMADO.getMessage());
-                   pedidosResponse.setDataAprovacao(LocalDateTime.now());
-                   pedidosResponse.setDataRetirada(request.getDataRetirada());
+                   pedidosVendasResponse.setStatus(StatusPedidoEnum.CONFIRMADO.getMessage());
+                   pedidosVendasResponse.setMessagem(StatusPedidoMessageEnum.PEDIDO_CONFIRMADO.getMessage());
+                   pedidosVendasResponse.setDataAprovacao(LocalDateTime.now());
+                   pedidosVendasResponse.setDataRetirada(request.getDataRetirada());
                }else {
-                   pedidosResponse.setStatus(StatusPedidoEnum.CANCELADO.getMessage());
-                   pedidosResponse.setMessagem(StatusPedidoMessageEnum.PEDIDO_CANCELADO.getMessage());
-                   pedidosResponse.setDataCancelamento(LocalDateTime.now());
+                   pedidosVendasResponse.setStatus(StatusPedidoEnum.CANCELADO.getMessage());
+                   pedidosVendasResponse.setMessagem(StatusPedidoMessageEnum.PEDIDO_CANCELADO.getMessage());
+                   pedidosVendasResponse.setDataCancelamento(LocalDateTime.now());
                }
-               atualizarDados(request, pedidos);
-               return pedidosResponse;
+               atualizarDados(request, pedidosVendas);
+               return pedidosVendasResponse;
            }
             throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ESTOQUE_ERROR));
         }
-    public void atualizarDados(AtualizarPedidosRequest request, Pedidos pedidos){
-        Produtos produto = produtosRepository.findById(pedidos.getProdutoId());
+    public void atualizarDados(AtualizarPedidosRequest request, PedidosVendas pedidosVendas){
+        Produtos produto = produtosRepository.findById(pedidosVendas.getProdutoId());
         if ((request.isPedidoConfirmado()&&request.getDataRetirada()!=null)||(!request.isPedidoConfirmado()&&request.getDataRetirada()==null)) {
             if (request.isPedidoConfirmado()) {
-                pedidos.setStatus(StatusPedidoEnum.CONFIRMADO.getMessage());
-                pedidos.setDataRetirada(request.getDataRetirada());
-                pedidos.setDataAprovacao(LocalDateTime.now());
-                pedidos.setDataCancelamento(null);
-                produto.setEstoque(produto.getEstoque() - pedidos.getQuantidade());
+                pedidosVendas.setStatus(StatusPedidoEnum.CONFIRMADO.getMessage());
+                pedidosVendas.setDataRetirada(request.getDataRetirada());
+                pedidosVendas.setDataAprovacao(LocalDateTime.now());
+                pedidosVendas.setDataCancelamento(null);
+                produto.setEstoque(produto.getEstoque() - pedidosVendas.getQuantidade());
             } else {
-                pedidos.setStatus(StatusPedidoEnum.CANCELADO.getMessage());
-                pedidos.setDataCancelamento(LocalDateTime.now());
-                pedidos.setDataAprovacao(null);
-                pedidos.setDataRetirada(null);
+                pedidosVendas.setStatus(StatusPedidoEnum.CANCELADO.getMessage());
+                pedidosVendas.setDataCancelamento(LocalDateTime.now());
+                pedidosVendas.setDataAprovacao(null);
+                pedidosVendas.setDataRetirada(null);
             }
         } else {
             throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_UPDATE_PEDIDO));
@@ -180,7 +180,7 @@ public class PedidosUseCase {
         return codigo;
     }
 
-    public void validarEstoque(PedidosRequest request, Produtos produto){
+    public void validarEstoque(PedidosVendasRequest request, Produtos produto){
         if (request.getQuantidade()==null||request.getQuantidade()==0) {
             throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.QUANDITADE_INVALIDA));
         }
@@ -193,7 +193,7 @@ public class PedidosUseCase {
         if (codigoPedido==null) {
             throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.CODIGO_NAO_ENVIADO));
         }
-        PanacheQuery<Pedidos> pedidosList = repository.listPedidosByCodigo(codigoPedido);
+        PanacheQuery<PedidosVendas> pedidosList = repository.listPedidosByCodigo(codigoPedido);
         long array = pedidosList.stream().count();
         if (array == 0) {
             throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.CODIGO_INVALIDO));

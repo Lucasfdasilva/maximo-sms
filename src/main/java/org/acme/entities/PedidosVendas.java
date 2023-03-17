@@ -1,21 +1,17 @@
 package org.acme.entities;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 
 @Getter
 @Setter
 @EqualsAndHashCode
 @Entity
-public class Pedidos {
+public class PedidosVendas {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

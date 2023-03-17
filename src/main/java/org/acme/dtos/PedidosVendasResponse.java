@@ -7,22 +7,21 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+@Builder
 @Getter
 @Setter
-@Builder
-public class PedidosListResponse {
-    private Long idPedido;
+public class PedidosVendasResponse {
     private String cliente;
     private String produto;
-    private String status;
     private Integer quantidade;
+    private String messagem;
     private Float valorTotal;
-    private LocalDateTime dataPedido;
     @JsonInclude(value = JsonInclude.Include.NON_NULL)
     private LocalDateTime dataAprovacao;
     @JsonInclude(value = JsonInclude.Include.NON_NULL)
-    private LocalDateTime dataRetirada;
-    @JsonInclude(value = JsonInclude.Include.NON_NULL)
     private LocalDateTime dataCancelamento;
+    private String status;
+    @JsonInclude(value = JsonInclude.Include.NON_NULL)
+    private LocalDateTime dataRetirada;
     private String codigoPedido;
 }
