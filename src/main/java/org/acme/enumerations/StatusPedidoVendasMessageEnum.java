@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public enum StatusPedidoMessageEnum {
+public enum StatusPedidoVendasMessageEnum {
     PEDIDO_PENDENTE  ("Pedido realizado com sucesso, guarde o código do pedido"),
     PEDIDO_CONFIRMADO  ("Pedido confirmado com sucesso!"),
     PEDIDO_CANCELADO  ("Pedido cancelado com sucesso!");

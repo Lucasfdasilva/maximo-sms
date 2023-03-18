@@ -2,8 +2,7 @@ package org.acme.usecase;
 
 import org.acme.dtos.*;
 import org.acme.entities.*;
-import org.acme.enumerations.StatusPedidoEnum;
-import org.acme.enumerations.StatusPedidoMessageEnum;
+import org.acme.enumerations.StatusPedidosCalibracaoEnum;
 import org.acme.repository.EmpresaRepository;
 import org.acme.repository.PedidosCalibracaoRepository;
 import org.acme.repository.UsuarioRepository;
@@ -34,7 +33,7 @@ public class PedidosCalibracaoUseCase {
         Empresa empresa = empresaRepository.findById(usuario.getEmpresa().getId());
         PedidosCalibracaoResponse pedidosCalibracaoResponse = PedidosCalibracaoResponse.builder()
                 .codigoPedido(gerarCodigo())
-                .dataCalibracao(request.getDataCalibracao())
+                .dataCalibracao(inserirDataCalibracao(request))
                 .gas(request.getGas())
                 .dataPedido(LocalDate.now())
                 .rbc(request.isRbc())
@@ -55,7 +54,7 @@ public class PedidosCalibracaoUseCase {
                                 .nome(usuario.getNome())
                                 .build())
                         .build())
-                .status(StatusPedidoEnum.PENDENTE.getMessage())
+                .status(StatusPedidosCalibracaoEnum.PENDENTE.getMessage())
                 .detectorMarca(request.getDetectorMarca())
                 .detectorModelo(request.getDetectorModelo())
                 .numeroSerie(request.getNumeroSerie())
@@ -68,7 +67,7 @@ public class PedidosCalibracaoUseCase {
         PedidosCalibracao pedidosCalibracao = new PedidosCalibracao();
         pedidosCalibracao.setCodigoPedido(response.getCodigoPedido());
         pedidosCalibracao.setDataPedido(LocalDate.now());
-        pedidosCalibracao.setDataCalibracao(request.getDataCalibracao());
+        pedidosCalibracao.setDataCalibracao(inserirDataCalibracao(request));
         pedidosCalibracao.setCliente(cliente);
         pedidosCalibracao.setDetectorMarca(request.getDetectorMarca());
         pedidosCalibracao.setDetectorModelo(request.getDetectorModelo());
@@ -76,7 +75,7 @@ public class PedidosCalibracaoUseCase {
         pedidosCalibracao.setNumeroSerie(request.getNumeroSerie());
         pedidosCalibracao.setRbc(request.isRbc());
         pedidosCalibracao.setTaxaUrgencia(request.isTaxaUrgencia());
-        pedidosCalibracao.setStatus(StatusPedidoEnum.PENDENTE.getMessage());
+        pedidosCalibracao.setStatus(StatusPedidosCalibracaoEnum.PENDENTE.getMessage());
         repository.persist(pedidosCalibracao);
     }
 
@@ -89,5 +88,11 @@ public class PedidosCalibracaoUseCase {
                 .mapToObj(randomIndex -> String.valueOf(chars.charAt(randomIndex)))
                 .collect(Collectors.joining());
         return codigo;
+    }
+    public String inserirDataCalibracao(PedidosCalibracaoRequest request){
+        if (request.isTaxaUrgencia()){
+            return "Em até 24Hrs";
+        }
+        return "Em até 5 dias";
     }
 }

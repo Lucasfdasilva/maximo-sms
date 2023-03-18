@@ -29,7 +29,7 @@ public class PedidosCalibracao {
     private Integer quantidade;
 
     @Column(name = "dataCalibracao")
-    private LocalDate dataCalibracao;
+    private String dataCalibracao;
 
     @Column(name = "dataPedido")
     private LocalDate dataPedido;
@@ -39,6 +39,9 @@ public class PedidosCalibracao {
 
     @Column(name = "status")
     private String status;
+
+    @Column(name = "revisao")
+    private String revisao;
 
     @Column(name = "rbc")
     private boolean rbc;

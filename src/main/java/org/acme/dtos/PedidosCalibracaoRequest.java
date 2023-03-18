@@ -3,22 +3,22 @@ package org.acme.dtos;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
 
 @Getter
 @Setter
 public class PedidosCalibracaoRequest {
 
-    @NotNull(message = "quantidade é requerida")
-    private LocalDate dataCalibracao;
-
     private boolean rbc;
 
+    @NotNull
     private boolean taxaUrgencia;
 
+    @NotBlank
     private String gas;
 
+    @NotNull
     private Integer quantidade;
 
     private String numeroSerie;

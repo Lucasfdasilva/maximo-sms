@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum StatusPedidoEnum {
+public enum StatusPedidoVendasEnum {
     PENDENTE  ("Pendente"),
     CONFIRMADO  ("Confirmado"),
     CANCELADO  ("Cancelado");

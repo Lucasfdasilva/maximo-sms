@@ -15,7 +15,7 @@ public class PedidosCalibracaoResponse {
     @JsonInclude(value = JsonInclude.Include.NON_NULL)
     private LocalDate dataAprovacao;
     @JsonInclude(value = JsonInclude.Include.NON_NULL)
-    private LocalDate dataCalibracao;
+    private String dataCalibracao;
     private LocalDate dataPedido;
     @JsonInclude(value = JsonInclude.Include.NON_NULL)
     private LocalDate dataCancelamento;
@@ -31,5 +31,6 @@ public class PedidosCalibracaoResponse {
     private String detectorMarca;
     private String detectorModelo;
     private String status;
+    private Integer revisao;
     private String codigoPedido;
 }

@@ -6,8 +6,8 @@ import org.acme.entities.PedidosVendas;
 import org.acme.entities.Produtos;
 import org.acme.entities.Usuario;
 import org.acme.enumerations.MensagemKeyEnum;
-import org.acme.enumerations.StatusPedidoEnum;
-import org.acme.enumerations.StatusPedidoMessageEnum;
+import org.acme.enumerations.StatusPedidoVendasEnum;
+import org.acme.enumerations.StatusPedidoVendasMessageEnum;
 import org.acme.exceptions.CoreRuleException;
 import org.acme.repository.PedidosVendasRepository;
 import org.acme.repository.ProdutosRepository;
@@ -17,7 +17,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.security.SecureRandom;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -47,8 +46,8 @@ public class PedidosVendasUseCase {
                 .cliente(usuario.getNome())
                 .produto(produtos.getNome())
                 .quantidade(request.getQuantidade())
-                .messagem(StatusPedidoMessageEnum.PEDIDO_PENDENTE.getMessage())
-                .status(StatusPedidoEnum.PENDENTE.getMessage())
+                .messagem(StatusPedidoVendasMessageEnum.PEDIDO_PENDENTE.getMessage())
+                .status(StatusPedidoVendasEnum.PENDENTE.getMessage())
                 .valorTotal(valor)
                 .codigoPedido(gerarCodigo())
                 .build();
@@ -64,7 +63,7 @@ public class PedidosVendasUseCase {
         pedidosVendas.setQuantidade(request.getQuantidade());
         pedidosVendas.setDataPedido(LocalDate.now());
         pedidosVendas.setValorTotal(valor);
-        pedidosVendas.setStatus(StatusPedidoEnum.PENDENTE.getMessage());
+        pedidosVendas.setStatus(StatusPedidoVendasEnum.PENDENTE.getMessage());
         pedidosVendas.setCliente(cliente.getNome());
         pedidosVendas.setProduto(produto.getNome());
         pedidosVendas.setCodigoPedido(response.getCodigoPedido());
@@ -126,13 +125,13 @@ public class PedidosVendasUseCase {
                        .codigoPedido(pedidosVendas.getCodigoPedido())
                        .build();
                if (request.isPedidoConfirmado()){
-                   pedidosVendasResponse.setStatus(StatusPedidoEnum.CONFIRMADO.getMessage());
-                   pedidosVendasResponse.setMessagem(StatusPedidoMessageEnum.PEDIDO_CONFIRMADO.getMessage());
+                   pedidosVendasResponse.setStatus(StatusPedidoVendasEnum.CONFIRMADO.getMessage());
+                   pedidosVendasResponse.setMessagem(StatusPedidoVendasMessageEnum.PEDIDO_CONFIRMADO.getMessage());
                    pedidosVendasResponse.setDataAprovacao(LocalDate.now());
                    pedidosVendasResponse.setDataRetirada(request.getDataRetirada());
                }else {
-                   pedidosVendasResponse.setStatus(StatusPedidoEnum.CANCELADO.getMessage());
-                   pedidosVendasResponse.setMessagem(StatusPedidoMessageEnum.PEDIDO_CANCELADO.getMessage());
+                   pedidosVendasResponse.setStatus(StatusPedidoVendasEnum.CANCELADO.getMessage());
+                   pedidosVendasResponse.setMessagem(StatusPedidoVendasMessageEnum.PEDIDO_CANCELADO.getMessage());
                    pedidosVendasResponse.setDataCancelamento(LocalDate.now());
                }
                atualizarDados(request, pedidosVendas);
@@ -144,13 +143,13 @@ public class PedidosVendasUseCase {
         Produtos produto = produtosRepository.findById(pedidosVendas.getProdutoId());
         if ((request.isPedidoConfirmado()&&request.getDataRetirada()!=null)||(!request.isPedidoConfirmado()&&request.getDataRetirada()==null)) {
             if (request.isPedidoConfirmado()) {
-                pedidosVendas.setStatus(StatusPedidoEnum.CONFIRMADO.getMessage());
+                pedidosVendas.setStatus(StatusPedidoVendasEnum.CONFIRMADO.getMessage());
                 pedidosVendas.setDataRetirada(request.getDataRetirada());
                 pedidosVendas.setDataAprovacao(LocalDate.now());
                 pedidosVendas.setDataCancelamento(null);
                 produto.setEstoque(produto.getEstoque() - pedidosVendas.getQuantidade());
             } else {
-                pedidosVendas.setStatus(StatusPedidoEnum.CANCELADO.getMessage());
+                pedidosVendas.setStatus(StatusPedidoVendasEnum.CANCELADO.getMessage());
                 pedidosVendas.setDataCancelamento(LocalDate.now());
                 pedidosVendas.setDataAprovacao(null);
                 pedidosVendas.setDataRetirada(null);
