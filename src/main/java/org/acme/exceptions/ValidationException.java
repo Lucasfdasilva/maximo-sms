@@ -1,6 +1,5 @@
 package org.acme.exceptions;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.acme.dtos.MessagemResponse;

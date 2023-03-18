@@ -21,7 +21,6 @@ public class UsuarioUseCase {
 
     private final UsuarioRepository usuarioRepository;
     private final Validator validator;
-
     private final EmpresaRepository empresaRepository;
 
     @Inject
