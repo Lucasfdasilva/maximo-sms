@@ -9,7 +9,9 @@ import lombok.Setter;
 @Builder
 public class EmpresaResponse {
 
-    private String nome;
+    private String nomeFantasia;
+
+    private String razaoSocial;
 
     private String email;
 

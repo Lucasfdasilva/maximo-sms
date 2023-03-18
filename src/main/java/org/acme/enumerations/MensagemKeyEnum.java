@@ -16,7 +16,9 @@ public enum MensagemKeyEnum {
     QUANDITADE_INVALIDA("Quantidade solicitada referente ao produto é inválida, é necessário inserir uma quantidade"),
     REQUEST_UPDATE_PEDIDO("Caso o pedido seja confirmado, é necessário haver data de retirada, caso cancelado não deve haver data de retirada"),
     CLIENTE_PRODUTO_INVALIDOS("ClienteId ou ProdutoId são invalidos"),
-    EMAIL_ERRO("Email já cadastrado para o usuario, faça o login"),
+    EMAIL_ERRO("Email inserido já cadastrado no nosso sistema, por favor, faça o login"),
+    EMAIL_INESISTENTE("Email não encontrado, por favor, faça o cadastro"),
+    SENHA_INVALIDA("Senha invalida"),
     CODIGO_INVALIDO("Código do pedido inválido.");
     private String mensagem;
 }

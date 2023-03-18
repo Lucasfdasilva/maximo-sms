@@ -16,8 +16,11 @@ public class Empresa {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "nome_empresa")
-    private String nomeEmpresa;
+    @Column(name = "nome_fantasia")
+    private String nomeFantasia;
+
+    @Column(name = "razao_social")
+    private String razaoSocial;
 
     @Column(name = "cnpj")
     private String cnpj;

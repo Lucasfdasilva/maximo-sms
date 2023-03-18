@@ -1,6 +1,5 @@
 package org.acme.usecase;
 
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import org.acme.dtos.*;
 import org.acme.entities.Empresa;
 import org.acme.entities.Usuario;
@@ -33,8 +32,8 @@ public class UsuarioUseCase {
     }
 
     public CriarUsuarioResponse incuirUsuario(CriarUsuarioRequest request) {
-        validarRequest(request.getEmpresa(), request.getUsuario());
-        validarExistenciaUsuario(request);
+        validarCriarUsuarioRequest(request);
+        validarExistenciaEmail(request);
         CriarUsuarioResponse criarUsuarioResponse = CriarUsuarioResponse.builder()
                 .usuario(UsuarioResponse.builder()
                         .dtNascimento(request.getUsuario().getDtNascimento())
@@ -44,13 +43,33 @@ public class UsuarioUseCase {
                 .empresa(EmpresaResponse.builder()
                         .cnpj(request.getEmpresa().getCnpj())
                         .email(request.getEmpresa().getEmail())
-                        .nome(request.getEmpresa().getNome())
+                        .nomeFantasia(request.getEmpresa().getNomeFantasia())
+                        .razaoSocial(request.getEmpresa().getRazaoSocial())
                         .telefone(request.getEmpresa().getTelefone())
                         .cep(request.getEmpresa().getCep())
                         .build())
                 .build();
         persistirDados(request);
         return criarUsuarioResponse;
+    }
+    public CriarUsuarioResponse verificarUsuario(VerificarUsuarioRequest request) {
+        validarVerificarUsuarioRequest(request);
+        Usuario usuario = buscarUsuario(request);
+        return CriarUsuarioResponse.builder()
+                .usuario(UsuarioResponse.builder()
+                        .dtNascimento(usuario.getDtNascimento())
+                        .email(usuario.getEmail())
+                        .nome(usuario.getNome())
+                        .build())
+                .empresa(EmpresaResponse.builder()
+                        .cnpj(usuario.getEmpresa().getCnpj())
+                        .email(usuario.getEmpresa().getEmail())
+                        .nomeFantasia(usuario.getEmpresa().getNomeFantasia())
+                        .razaoSocial(usuario.getEmpresa().getRazaoSocial())
+                        .telefone(usuario.getEmpresa().getTelefone())
+                        .cep(usuario.getEmpresa().getCep())
+                        .build())
+                .build();
     }
 
     public AtualizarUsuarioResponse atualizarUsuario(AtualizarUsuarioRequest request, Long id) {
@@ -71,12 +90,15 @@ public class UsuarioUseCase {
         return criarUsuarioResponse;
     }
 
-    public void validarRequest(EmpresaRequest empresaRequest, UsuarioRequest usuarioRequest) {
-        Set<ConstraintViolation<EmpresaRequest>> violationsEmpresa = validator.validate(empresaRequest);
+    public void validarCriarUsuarioRequest(CriarUsuarioRequest request) {
+        if (request==null){
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
+        }
+        Set<ConstraintViolation<EmpresaRequest>> violationsEmpresa = validator.validate(request.getEmpresa());
         if (!violationsEmpresa.isEmpty()) {
             throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
         }
-        Set<ConstraintViolation<UsuarioRequest>> violationsUsuario = validator.validate(usuarioRequest);
+        Set<ConstraintViolation<UsuarioRequest>> violationsUsuario = validator.validate(request.getUsuario());
         if (!violationsUsuario.isEmpty()) {
             throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
         }
@@ -84,6 +106,9 @@ public class UsuarioUseCase {
     }
 
     public void validarRequestAtualizar(AtualizarUsuarioRequest request) {
+        if (request==null){
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
+        }
         Set<ConstraintViolation<AtualizarUsuarioRequest>> violations = validator.validate(request);
         if (!violations.isEmpty()) {
             throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
@@ -95,27 +120,43 @@ public class UsuarioUseCase {
             throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.USUARIO_INVALIDO));
         }
     }
-    public void validarEmpresa(Empresa empresa) {
-        if (empresa == null) {
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.EMPRESA_INVALIDA));
+    public void validarVerificarUsuarioRequest(VerificarUsuarioRequest request) {
+        if (request==null){
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
         }
+        Set<ConstraintViolation<VerificarUsuarioRequest>> violations = validator.validate(request);
+        if (!violations.isEmpty()) {
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
+        }
+    }
+
+    public Usuario buscarUsuario(VerificarUsuarioRequest request) {
+       Usuario usuario = usuarioRepository.findByEmail(request.getEmail());
+       if (usuario==null){
+           throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.EMAIL_INESISTENTE));
+       }
+       if (!usuario.getSenha().equals(request.getSenha())){
+           throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.SENHA_INVALIDA));
+       }
+       return usuario;
     }
 
     public void persistirDados(CriarUsuarioRequest request) {
         Usuario user = new Usuario();
         Empresa empresa = new Empresa();
 
-       boolean empresaExiste = (validarExistenciaEmpresa(request)!=0);
+       boolean empresaExiste = (buscarEmpresa(request)!=null);
 
         if (!empresaExiste) {
             empresa.setCnpj(request.getEmpresa().getCnpj());
             empresa.setEmail(request.getEmpresa().getEmail());
             empresa.setTelefone(request.getEmpresa().getTelefone());
-            empresa.setNomeEmpresa(request.getEmpresa().getNome());
+            empresa.setRazaoSocial(request.getEmpresa().getRazaoSocial());
+            empresa.setNomeFantasia(request.getEmpresa().getNomeFantasia());
             empresa.setCep(request.getEmpresa().getCep());
             empresaRepository.persist(empresa);
          } else {
-            empresa = empresaRepository.findById(validarExistenciaEmpresa(request));
+            empresa = buscarEmpresa(request);
         }
         user.setDtNascimento(request.getUsuario().getDtNascimento());
         user.setNome(request.getUsuario().getNome());
@@ -143,30 +184,14 @@ public class UsuarioUseCase {
         usuarioRepository.delete(user);
     }
 
-    public void validarExistenciaUsuario(CriarUsuarioRequest request) {
-        PanacheQuery<Usuario> usuarios = usuarioRepository.findAll();
-        long contUsuario = usuarios.count();
-        if (contUsuario!=0) {
-            for (int i = 0; i < contUsuario; i++) {
-                String email = usuarios.list().get(i).getEmail();
-                if (email.equals(request.getUsuario().getEmail())) {
-                    throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.EMAIL_ERRO));
-                }
-            }
+    public void validarExistenciaEmail(CriarUsuarioRequest request) {
+        Usuario usuario = usuarioRepository.findByEmail(request.getUsuario().getEmail());
+        if (usuario!=null) {
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.EMAIL_ERRO));
         }
     }
-    public Long validarExistenciaEmpresa(CriarUsuarioRequest request){
-        PanacheQuery<Empresa> empresas = empresaRepository.findAll();
-        long contEmpresa = empresas.count();
-        if (contEmpresa!=0) {
-            for (int i = 0; i < contEmpresa; i++) {
-                String cnpj = empresas.list().get(i).getCnpj();
-                if (cnpj.equals(request.getEmpresa().getCnpj())) {
-                    return empresas.list().get(i).getId();
-                }
-            }
-        }
-        Long ExistenciaFalsa = 0L;
-        return ExistenciaFalsa;
+    public Empresa buscarEmpresa(CriarUsuarioRequest request){
+      Empresa empresa = empresaRepository.findByCnpj(request.getEmpresa().getCnpj());
+      return empresa;
     }
 }

@@ -1,10 +1,7 @@
 package org.acme.rest;
 
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
-import org.acme.dtos.AtualizarUsuarioRequest;
-import org.acme.dtos.AtualizarUsuarioResponse;
-import org.acme.dtos.CriarUsuarioRequest;
-import org.acme.dtos.CriarUsuarioResponse;
+import org.acme.dtos.*;
 import org.acme.entities.Usuario;
 import org.acme.repository.UsuarioRepository;
 import org.acme.usecase.UsuarioUseCase;
@@ -30,9 +27,16 @@ public class UsuarioController {
 
     @POST
     @Transactional
-    public Response criarUsuario(CriarUsuarioRequest userRequest){
+    public Response cadastrarUsuario(CriarUsuarioRequest userRequest){
         CriarUsuarioResponse response = useCase.incuirUsuario(userRequest);
         return Response.status(Response.Status.CREATED).entity(response).build();
+    }
+    @GET
+    @Transactional
+    @Path("/login")
+    public Response verificarUsuarioCadastrado(VerificarUsuarioRequest userRequest){
+        CriarUsuarioResponse response = useCase.verificarUsuario(userRequest);
+        return Response.status(Response.Status.OK).entity(response).build();
     }
 
     @GET

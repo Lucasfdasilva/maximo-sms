@@ -2,7 +2,6 @@ package org.acme.dtos;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.acme.entities.Empresa;
 
 @Getter
 @Setter

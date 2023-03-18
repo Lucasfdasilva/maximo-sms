@@ -10,7 +10,10 @@ import javax.validation.constraints.NotBlank;
 public class EmpresaRequest {
 
     @NotBlank
-    private String nome;
+    private String nomeFantasia;
+
+    @NotBlank
+    private String razaoSocial;
 
     @NotBlank
     private String email;

@@ -30,7 +30,8 @@ public class EmpresaUseCase {
         EmpresaResponse response = EmpresaResponse.builder()
                 .cnpj(request.getCnpj())
                 .email(request.getEmail())
-                .nome(request.getNome())
+                .nomeFantasia(request.getNomeFantasia())
+                .razaoSocial(request.getRazaoSocial())
                 .telefone(request.getTelefone())
                 .build();
         persistirDados(request);
@@ -38,7 +39,8 @@ public class EmpresaUseCase {
     }
     public void persistirDados(EmpresaRequest request){
         Empresa empresa = new Empresa();
-        empresa.setNomeEmpresa(request.getNome());
+        empresa.setNomeFantasia(request.getNomeFantasia());
+        empresa.setRazaoSocial(request.getRazaoSocial());
         empresa.setCnpj(request.getCnpj());
         empresa.setEmail(request.getEmail());
         empresa.setTelefone(request.getTelefone());
