@@ -40,6 +40,12 @@ public class PedidosCalibracaoController {
         List<PedidosCalibracaoResponse> pedidos = repository.listarPedidos();
         return Response.ok(pedidos).build();
     }
+    @GET
+    @Path("{codigoPedido}")
+    public Response buscarPedido(@PathParam("codigoPedido") String codigoPedido){
+        PedidosCalibracao pedidos = repository.findByCodigo(codigoPedido);
+        return Response.status(Response.Status.OK).entity(pedidos).build();
+    }
 
     @PUT
     @Transactional
