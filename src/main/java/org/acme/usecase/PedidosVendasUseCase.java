@@ -137,7 +137,7 @@ public class PedidosVendasUseCase {
                atualizarDados(request, pedidosVendas);
                return pedidosVendasResponse;
            }
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ESTOQUE_ERROR));
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_006));
         }
     public void atualizarDados(AtualizarPedidosRequest request, PedidosVendas pedidosVendas){
         Produtos produto = produtosRepository.findById(pedidosVendas.getProdutoId());
@@ -155,17 +155,17 @@ public class PedidosVendasUseCase {
                 pedidosVendas.setDataRetirada(null);
             }
         } else {
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_UPDATE_PEDIDO));
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_010));
         }
     }
     public void validarClienteEProduto(Long clientId, Long produtoId){
         if (clientId==null||produtoId==null) {
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.CLIENTE_PRODUTO_NAO_ENVIADO));
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_008));
         } else {
             Usuario usuario = usuarioRepository.findById(clientId);
             Produtos produtos = produtosRepository.findById(produtoId);
             if (usuario == null || produtos == null) {
-                throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.CLIENTE_PRODUTO_INVALIDOS));
+                throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_011));
             }
         }
     }
@@ -182,21 +182,21 @@ public class PedidosVendasUseCase {
 
     public void validarEstoque(PedidosVendasRequest request, Produtos produto){
         if (request.getQuantidade()==null||request.getQuantidade()==0) {
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.QUANDITADE_INVALIDA));
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_009));
         }
         if (request.getQuantidade() > produto.getEstoque()) {
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ESTOQUE_ERROR));
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_006));
         }
     }
 
     public void validarCodigoPedido(String codigoPedido){
         if (codigoPedido==null) {
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.CODIGO_NAO_ENVIADO));
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_007));
         }
         PanacheQuery<PedidosVendas> pedidosList = repository.listPedidosByCodigo(codigoPedido);
         long array = pedidosList.stream().count();
         if (array == 0) {
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.CODIGO_INVALIDO));
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_018));
         }
     }
 }

@@ -70,12 +70,12 @@ public class ProdutosUseCase {
     public void validarRequest(CadastrarProdutosRequest request){
         Set<ConstraintViolation<CadastrarProdutosRequest>> violations = validator.validate(request);
         if (!violations.isEmpty()){
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_001));
         }
     }
     public void validarProduto(Produtos produto){
         if (produto==null) {
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.PRODUTO_INVALIDO));
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_005));
         }
     }
 

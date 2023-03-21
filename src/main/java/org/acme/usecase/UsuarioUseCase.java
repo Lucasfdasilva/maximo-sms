@@ -91,54 +91,54 @@ public class UsuarioUseCase {
 
     public void validarCriarUsuarioRequest(CriarUsuarioRequest request) {
         if (request==null){
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_001));
         }
         Set<ConstraintViolation<CriarUsuarioRequest>> violationsRequest = validator.validate(request);
         if (!violationsRequest.isEmpty()) {
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_001));
         }
         Set<ConstraintViolation<EmpresaRequest>> violationsEmpresa = validator.validate(request.getEmpresa());
         if (!violationsEmpresa.isEmpty()) {
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_001));
         }
         Set<ConstraintViolation<UsuarioRequest>> violationsUsuario = validator.validate(request.getUsuario());
         if (!violationsUsuario.isEmpty()) {
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_001));
         }
     }
 
     public void validarRequestAtualizar(AtualizarUsuarioRequest request) {
         if (request==null){
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_001));
         }
         Set<ConstraintViolation<AtualizarUsuarioRequest>> violations = validator.validate(request);
         if (!violations.isEmpty()) {
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_001));
         }
     }
 
     public void validarUsuario(Usuario user) {
         if (user == null) {
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.USUARIO_INVALIDO));
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_002));
         }
     }
     public void validarVerificarUsuarioRequest(VerificarUsuarioRequest request) {
         if (request==null){
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_001));
         }
         Set<ConstraintViolation<VerificarUsuarioRequest>> violations = validator.validate(request);
         if (!violations.isEmpty()) {
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_001));
         }
     }
 
     public Usuario buscarUsuario(VerificarUsuarioRequest request) {
        Usuario usuario = usuarioRepository.findByEmail(request.getEmail());
        if (usuario==null){
-           throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.EMAIL_INESISTENTE));
+           throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_013));
        }
        if (!usuario.getSenha().equals(request.getSenha())){
-           throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.SENHA_INVALIDA));
+           throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_014));
        }
        return usuario;
     }
@@ -189,7 +189,7 @@ public class UsuarioUseCase {
     public void validarExistenciaEmail(CriarUsuarioRequest request) {
         Usuario usuario = usuarioRepository.findByEmail(request.getUsuario().getEmail());
         if (usuario!=null) {
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.EMAIL_ERRO));
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_012));
         }
     }
     public Empresa buscarEmpresa(CriarUsuarioRequest request){

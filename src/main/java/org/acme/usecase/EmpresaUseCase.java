@@ -103,23 +103,23 @@ public class EmpresaUseCase {
 
     public void validarEmpresa(Empresa empresa) {
         if (empresa == null) {
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.EMPRESA_INVALIDA));
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_003));
         }
     }
 
     public void validarEmpresaRequest(EmpresaRequest request) {
         if (request==null){
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_001));
         }
         Set<ConstraintViolation<EmpresaRequest>> violations = validator.validate(request);
         if (!violations.isEmpty()) {
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_001));
         }
     }
     public void validarCnpj(EmpresaRequest request){
         Empresa empresa = empresaRepository.findByCnpj(request.getCnpj());
         if (empresa!=null){
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.CNPJ_EXISTENTE));
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_004));
         }
     }
 }

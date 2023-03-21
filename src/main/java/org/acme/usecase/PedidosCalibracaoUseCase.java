@@ -1,6 +1,7 @@
 package org.acme.usecase;
 
 import java.util.Objects;
+
 import org.acme.dtos.*;
 import org.acme.entities.*;
 import org.acme.enumerations.MensagemKeyEnum;
@@ -9,7 +10,6 @@ import org.acme.exceptions.CoreRuleException;
 import org.acme.repository.EmpresaRepository;
 import org.acme.repository.PedidosCalibracaoRepository;
 import org.acme.repository.UsuarioRepository;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.validation.ConstraintViolation;
@@ -133,6 +133,8 @@ public class PedidosCalibracaoUseCase {
                 .valor(pedido.getValor())
                 .revisao(pedido.getRevisao())
                 .dataAprovacao(pedido.getDataAprovacao())
+                .dataCancelamento(pedido.getDataCancelamento())
+                .motivoCancelamento(pedido.getMotivoCancelamento())
                 .cliente(CriarUsuarioResponse.builder()
                         .empresa(EmpresaResponse.builder()
                                 .telefone(pedido.getCliente().getEmpresa().getTelefone())
@@ -177,19 +179,19 @@ public class PedidosCalibracaoUseCase {
             pedido.setStatus(request.getStatus());}
     }
     public void validarCodigoPedido(String codigoPedido){
-        if (codigoPedido==null) {throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.CODIGO_NAO_ENVIADO));}
+        if (codigoPedido==null) {throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_007));}
 
         PedidosCalibracao pedido = repository.findByCodigo(codigoPedido);
 
-        if (pedido == null) {throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.CODIGO_INVALIDO));}
+        if (pedido == null) {throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_018));}
     }
     public void validarAtualizarPedidoRequest(AtualizarPedidoCalibracaoRequest request) {
         if (request==null){
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_001));
         }
         Set<ConstraintViolation<AtualizarPedidoCalibracaoRequest>> violations = validator.validate(request);
         if (!violations.isEmpty()) {
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_001));
         }
     }
     public String buscarMensagemStatus(short codigoStatus){
@@ -212,39 +214,37 @@ public class PedidosCalibracaoUseCase {
             return StatusPedidosCalibracaoEnum.FINALIZADO.getMessage();
         }
         else {
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.STATUS_INVALIDO));
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_015));
         }
     }
     public void validarAltualizarStatusRequest(AtualizarStatusPedidoRequest request) {
         if (request==null){
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
-        }
-        Set<ConstraintViolation<AtualizarStatusPedidoRequest>> violations = validator.validate(request);
-        if (!violations.isEmpty()) {
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
-        }
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_001));}
+
+        if (request.getStatus()==0) {
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_019));}
     }
 
     public void validarFazerPedido(PedidosCalibracaoRequest request, Usuario usuario) {
         Set<ConstraintViolation<PedidosCalibracaoRequest>> violationsPedido = validator.validate(request);
         if (request==null){
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));}
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_001));}
 
         if (!violationsPedido.isEmpty()) {
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));}
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_001));}
 
         if (usuario==null){
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.USUARIO_INVALIDO));}
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_002));}
 
         if (usuario.getEmpresa()==null){
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.EMPRESA_INVALIDA));}
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_003));}
     }
 
     public PedidosCalibracaoResponse atualizarStatus(String codigoPedido, AtualizarStatusPedidoRequest request){
         validarAltualizarStatusRequest(request);
         validarCodigoPedido(codigoPedido);
-
         PedidosCalibracao pedido = repository.findByCodigo(codigoPedido);
+        validarRegraStatus(request, pedido);
         AtualizarPedidoCalibracaoRequest atualizarRequest = AtualizarPedidoCalibracaoRequest.builder()
                 .status(buscarMensagemStatus(request.getStatus()))
                 .revisao(request.getRevisao())
@@ -269,6 +269,8 @@ public class PedidosCalibracaoUseCase {
                 .quantidade(pedido.getQuantidade())
                 .taxaUrgencia(pedido.isTaxaUrgencia())
                 .valor(pedido.getValor())
+                .dataCancelamento(pedido.getDataCancelamento())
+                .motivoCancelamento(pedido.getMotivoCancelamento())
                 .revisao(pedido.getRevisao())
                 .dataAprovacao(pedido.getDataAprovacao())
                 .cliente(CriarUsuarioResponse.builder()
@@ -287,5 +289,32 @@ public class PedidosCalibracaoUseCase {
                                 .build())
                         .build())
                 .build();
+    }
+
+    public void validarRegraStatus(AtualizarStatusPedidoRequest request, PedidosCalibracao pedido){
+
+        boolean existeProposta = request.getProposta() != null
+                && !request.getProposta().isBlank()
+                && !request.getProposta().isEmpty();
+
+        boolean existeMotivoCancelamento = request.getMotivoCancelamento() != null
+                && !request.getMotivoCancelamento().isBlank()
+                && !request.getMotivoCancelamento().isEmpty();
+
+        boolean existeValor = request.getValor() != 0.0;
+
+        if (request.getStatus()==(short)2 && (!existeProposta || !existeValor)){
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_016));}
+
+        if (request.getStatus()==(short)4 && !existeMotivoCancelamento){
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_017));}
+
+        if (request.getStatus()==(short)3){
+            pedido.setDataAprovacao(LocalDate.now());
+        }
+        if (request.getStatus()==(short)4){
+            pedido.setDataCancelamento(LocalDate.now());
+            pedido.setMotivoCancelamento(request.getMotivoCancelamento());
+        }
     }
 }

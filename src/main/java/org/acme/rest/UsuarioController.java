@@ -31,7 +31,7 @@ public class UsuarioController {
         CriarUsuarioResponse response = useCase.incuirUsuario(userRequest);
         return Response.status(Response.Status.CREATED).entity(response).build();
     }
-    @GET
+    @POST
     @Transactional
     @Path("/login")
     public Response verificarUsuarioCadastrado(VerificarUsuarioRequest userRequest){

@@ -6,21 +6,24 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum MensagemKeyEnum {
-    REQUEST_ERRO("Request inválido, verificar campos obrigatórios."),
-    USUARIO_INVALIDO("Usuário inválido."),
-    EMPRESA_INVALIDA("Empresa inválida."),
-    CNPJ_EXISTENTE("CNPJ da empresa já cadastrado."),
-    PRODUTO_INVALIDO("Produto não encontrado."),
-    ESTOQUE_ERROR("Estoque insuficiente, solicitação cancelada."),
-    CODIGO_NAO_ENVIADO("Código do pedido não enviado"),
-    CLIENTE_PRODUTO_NAO_ENVIADO("ClienteId ou ProdutoId não recebidos"),
-    QUANDITADE_INVALIDA("Quantidade solicitada referente ao produto é inválida, é necessário inserir uma quantidade"),
-    REQUEST_UPDATE_PEDIDO("Caso o pedido seja confirmado, é necessário haver data de retirada, caso cancelado não deve haver data de retirada"),
-    CLIENTE_PRODUTO_INVALIDOS("ClienteId ou ProdutoId são invalidos"),
-    EMAIL_ERRO("Email inserido já cadastrado no nosso sistema, por favor, faça o login"),
-    EMAIL_INESISTENTE("Email não encontrado, por favor, faça o cadastro"),
-    SENHA_INVALIDA("Senha invalida"),
-    STATUS_INVALIDO("Código de Status inválido"),
-    CODIGO_INVALIDO("Código do pedido inválido.");
+    ID_001("Request inválido, verificar campos obrigatórios."),
+    ID_002("Usuário inválido."),
+    ID_003("Empresa inválida."),
+    ID_004("CNPJ da empresa já cadastrado."),
+    ID_005("Produto não encontrado."),
+    ID_006("Estoque insuficiente, solicitação cancelada."),
+    ID_007("Código do pedido não enviado"),
+    ID_008("ClienteId ou ProdutoId não recebidos"),
+    ID_009("Quantidade solicitada referente ao produto é inválida, é necessário inserir uma quantidade"),
+    ID_010("Caso o pedido seja confirmado, é necessário haver data de retirada, caso cancelado não deve haver data de retirada"),
+    ID_011("ClienteId ou ProdutoId são invalidos"),
+    ID_012("Email inserido já cadastrado no nosso sistema, por favor, faça o login"),
+    ID_013("Email não encontrado, por favor, faça o cadastro"),
+    ID_014("Senha invalida"),
+    ID_015("Código de Status inválido"),
+    ID_016("É necessário enviar o numero da proposta e o valor"),
+    ID_017("É necessário enviar o motivo de cancelamento"),
+    ID_018("Código do pedido inválido."),
+    ID_019("É necessário enviar o status");
     private String mensagem;
 }
