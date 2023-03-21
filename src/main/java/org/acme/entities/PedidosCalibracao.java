@@ -41,7 +41,7 @@ public class PedidosCalibracao {
     private String status;
 
     @Column(name = "revisao")
-    private String revisao;
+    private Integer revisao;
 
     @Column(name = "rbc")
     private boolean rbc;

@@ -93,6 +93,10 @@ public class UsuarioUseCase {
         if (request==null){
             throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
         }
+        Set<ConstraintViolation<CriarUsuarioRequest>> violationsRequest = validator.validate(request);
+        if (!violationsRequest.isEmpty()) {
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
+        }
         Set<ConstraintViolation<EmpresaRequest>> violationsEmpresa = validator.validate(request.getEmpresa());
         if (!violationsEmpresa.isEmpty()) {
             throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
@@ -101,7 +105,6 @@ public class UsuarioUseCase {
         if (!violationsUsuario.isEmpty()) {
             throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
         }
-
     }
 
     public void validarRequestAtualizar(AtualizarUsuarioRequest request) {

@@ -7,11 +7,13 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum StatusPedidosCalibracaoEnum {
 
-    PENDENTE  ("PENDENTE DE ENVIO"),
-    ELABORADA ("PROPOSTA ELABORADA"),
-    ALTERADA ("PROPOSTA ALTERADA"),
-    FORA_ESCOPO ("PEDIDO FORA DO ESCOPO"),
-    CANCELADO ("PEDIDO CANCELADO PELO LEAD");
+    PENDENTE  ("PROPOSTA PENDENTE",(short)1),
+    APROVADA  ("PROPOSTA APROVADA",(short)2),
+    ELABORADA ("PROPOSTA ENVIADA",(short)3),
+    CANCELADO ("PROPOSTA CANCELADA",(short)4),
+    FORA_ESCOPO ("PEDIDO FORA DO ESCOPO",(short)5),
+    FINALIZADO ("PEDIDO FINALIZADO",(short)6);
 
     private final String message;
+    private final short codigo;
 }

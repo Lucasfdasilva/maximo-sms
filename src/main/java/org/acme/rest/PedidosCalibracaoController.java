@@ -40,5 +40,11 @@ public class PedidosCalibracaoController {
         return Response.ok(query.list()).build();
     }
 
+    @PUT
+    @Transactional
+    public Response alterarPedido(@QueryParam("codigoPedido") String codigoPedido, AtualizarPedidoCalibracaoRequest request){
+        PedidosCalibracaoResponse response = useCase.atualizarPedido(codigoPedido, request);
+        return Response.status(Response.Status.CREATED).entity(response).build();
+    }
 
 }

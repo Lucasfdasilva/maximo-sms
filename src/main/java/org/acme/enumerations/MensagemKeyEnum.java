@@ -20,6 +20,7 @@ public enum MensagemKeyEnum {
     EMAIL_ERRO("Email inserido já cadastrado no nosso sistema, por favor, faça o login"),
     EMAIL_INESISTENTE("Email não encontrado, por favor, faça o cadastro"),
     SENHA_INVALIDA("Senha invalida"),
+    STATUS_INVALIDO("Código de Status inválido"),
     CODIGO_INVALIDO("Código do pedido inválido.");
     private String mensagem;
 }
