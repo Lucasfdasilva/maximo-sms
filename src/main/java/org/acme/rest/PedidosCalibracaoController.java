@@ -11,6 +11,7 @@ import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
 
 @Path("maximosms/pedidos/calibracao")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -36,15 +37,22 @@ public class PedidosCalibracaoController {
 
     @GET
     public Response listPedidos(){
-        PanacheQuery<PedidosCalibracao> query = repository.findAll();
-        return Response.ok(query.list()).build();
+        List<PedidosCalibracaoResponse> pedidos = repository.listarPedidos();
+        return Response.ok(pedidos).build();
     }
 
     @PUT
     @Transactional
     public Response alterarPedido(@QueryParam("codigoPedido") String codigoPedido, AtualizarPedidoCalibracaoRequest request){
         PedidosCalibracaoResponse response = useCase.atualizarPedido(codigoPedido, request);
-        return Response.status(Response.Status.CREATED).entity(response).build();
+        return Response.status(Response.Status.OK).entity(response).build();
     }
 
+    @PUT
+    @Transactional
+    @Path("/status")
+    public Response alterarStatusPedido(@QueryParam("codigoPedido") String codigoPedido, AtualizarStatusPedidoRequest request){
+        PedidosCalibracaoResponse response = useCase.atualizarStatus(codigoPedido, request);
+        return Response.status(Response.Status.OK).entity(response).build();
+    }
 }

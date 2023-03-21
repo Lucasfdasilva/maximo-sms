@@ -64,6 +64,9 @@ public class PedidosCalibracao {
     @Column(name = "codigoPedido")
     private String codigoPedido;
 
+    @Column(name = "proposta")
+    private String proposta;
+
     @Column(name = "dataCancelamento")
     private LocalDate dataCancelamento;
 

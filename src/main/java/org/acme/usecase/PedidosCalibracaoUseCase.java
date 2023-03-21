@@ -88,6 +88,7 @@ public class PedidosCalibracaoUseCase {
         pedidosCalibracao.setRbc(request.isRbc());
         pedidosCalibracao.setTaxaUrgencia(request.isTaxaUrgencia());
         pedidosCalibracao.setStatus(StatusPedidosCalibracaoEnum.PENDENTE.getMessage());
+        pedidosCalibracao.setRevisao(0);
         repository.persist(pedidosCalibracao);
     }
 
@@ -166,7 +167,14 @@ public class PedidosCalibracaoUseCase {
             pedido.setRbc(request.isRbc());}
         if (request.isTaxaUrgencia()){
             pedido.setTaxaUrgencia(request.isTaxaUrgencia());}
-        pedido.setStatus(buscarMensagemStatus(request.getStatus()));
+        if (!Objects.isNull(request.getRevisao())){
+            pedido.setRevisao(request.getRevisao());}
+        if (!Objects.isNull(request.getProposta())){
+            pedido.setProposta(request.getProposta());}
+        if (!Objects.isNull(request.getProposta())){
+            pedido.setProposta(request.getProposta());}
+        if (!Objects.isNull(request.getStatus())){
+            pedido.setStatus(request.getStatus());}
     }
     public void validarCodigoPedido(String codigoPedido){
         if (codigoPedido==null) {throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.CODIGO_NAO_ENVIADO));}
@@ -189,13 +197,13 @@ public class PedidosCalibracaoUseCase {
             return StatusPedidosCalibracaoEnum.PENDENTE.getMessage();
         }
         if (codigoStatus==(short) 2){
-            return StatusPedidosCalibracaoEnum.APROVADA.getMessage();
+            return StatusPedidosCalibracaoEnum.ENVIADA.getMessage();
         }
         if (codigoStatus==(short) 3){
-            return StatusPedidosCalibracaoEnum.ELABORADA.getMessage();
+            return StatusPedidosCalibracaoEnum.APROVADA.getMessage();
         }
         if (codigoStatus==(short) 4){
-            return StatusPedidosCalibracaoEnum.CANCELADO.getMessage();
+            return StatusPedidosCalibracaoEnum.CANCELADA.getMessage();
         }
         if (codigoStatus==(short) 5){
             return StatusPedidosCalibracaoEnum.FORA_ESCOPO.getMessage();
@@ -205,6 +213,15 @@ public class PedidosCalibracaoUseCase {
         }
         else {
             throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.STATUS_INVALIDO));
+        }
+    }
+    public void validarAltualizarStatusRequest(AtualizarStatusPedidoRequest request) {
+        if (request==null){
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
+        }
+        Set<ConstraintViolation<AtualizarStatusPedidoRequest>> violations = validator.validate(request);
+        if (!violations.isEmpty()) {
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));
         }
     }
 
@@ -217,13 +234,58 @@ public class PedidosCalibracaoUseCase {
             throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.REQUEST_ERRO));}
 
         if (usuario==null){
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.USUARIO_INVALIDO));
-        }
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.USUARIO_INVALIDO));}
 
-        Empresa empresa = empresaRepository.findById(usuario.getEmpresa().getId());
-        if (empresa==null){
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.EMPRESA_INVALIDA));
-        }
+        if (usuario.getEmpresa()==null){
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.EMPRESA_INVALIDA));}
     }
 
+    public PedidosCalibracaoResponse atualizarStatus(String codigoPedido, AtualizarStatusPedidoRequest request){
+        validarAltualizarStatusRequest(request);
+        validarCodigoPedido(codigoPedido);
+
+        PedidosCalibracao pedido = repository.findByCodigo(codigoPedido);
+        AtualizarPedidoCalibracaoRequest atualizarRequest = AtualizarPedidoCalibracaoRequest.builder()
+                .status(buscarMensagemStatus(request.getStatus()))
+                .revisao(request.getRevisao())
+                .proposta(request.getProposta())
+                .valor(request.getValor())
+                .dataAprovacao(request.getDataAprovacao())
+                .dataCancelamento(request.getDataCancelamento())
+                .motivoCancelamento(request.getMotivoCancelamento())
+                .build();
+        atualizarDados(atualizarRequest, pedido);
+
+        return PedidosCalibracaoResponse.builder()
+                .numeroSerie(pedido.getNumeroSerie())
+                .dataPedido(pedido.getDataPedido())
+                .rbc(pedido.isRbc())
+                .gas(pedido.getGas())
+                .detectorModelo(pedido.getDetectorModelo())
+                .codigoPedido(pedido.getCodigoPedido())
+                .detectorMarca(pedido.getDetectorMarca())
+                .dataCalibracao(pedido.getDataCalibracao())
+                .status(pedido.getStatus())
+                .quantidade(pedido.getQuantidade())
+                .taxaUrgencia(pedido.isTaxaUrgencia())
+                .valor(pedido.getValor())
+                .revisao(pedido.getRevisao())
+                .dataAprovacao(pedido.getDataAprovacao())
+                .cliente(CriarUsuarioResponse.builder()
+                        .empresa(EmpresaResponse.builder()
+                                .telefone(pedido.getCliente().getEmpresa().getTelefone())
+                                .nomeFantasia(pedido.getCliente().getEmpresa().getNomeFantasia())
+                                .razaoSocial(pedido.getCliente().getEmpresa().getRazaoSocial())
+                                .email(pedido.getCliente().getEmpresa().getEmail())
+                                .cnpj(pedido.getCliente().getEmpresa().getCnpj())
+                                .cep(pedido.getCliente().getEmpresa().getCep())
+                                .build())
+                        .usuario(UsuarioResponse.builder()
+                                .dtNascimento(pedido.getCliente().getDtNascimento())
+                                .email(pedido.getCliente().getEmail())
+                                .nome(pedido.getCliente().getNome())
+                                .build())
+                        .build())
+                .build();
+    }
 }

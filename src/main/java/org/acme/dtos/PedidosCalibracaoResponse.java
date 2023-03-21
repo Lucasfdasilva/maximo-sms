@@ -11,26 +11,48 @@ import java.time.LocalDate;
 @Setter
 public class PedidosCalibracaoResponse {
 
+    @JsonInclude(value = JsonInclude.Include.NON_NULL)
+    private Long id;
+
     private CriarUsuarioResponse cliente;
+
     @JsonInclude(value = JsonInclude.Include.NON_NULL)
     private LocalDate dataAprovacao;
+
     @JsonInclude(value = JsonInclude.Include.NON_NULL)
     private String dataCalibracao;
+
     private LocalDate dataPedido;
+
     @JsonInclude(value = JsonInclude.Include.NON_NULL)
     private LocalDate dataCancelamento;
+
     @JsonInclude(value = JsonInclude.Include.NON_NULL)
     private String motivoCancelamento;
+
     @JsonInclude(value = JsonInclude.Include.NON_NULL)
     private Float valor;
+
     private boolean rbc;
+
     private boolean taxaUrgencia;
+
     private String gas;
+
     private Integer quantidade;
+
     private String numeroSerie;
+
     private String detectorMarca;
+
     private String detectorModelo;
+
     private String status;
+
     private Integer revisao;
+
     private String codigoPedido;
+
+    @JsonInclude(value = JsonInclude.Include.NON_NULL)
+    private String proposta;
 }
