@@ -74,45 +74,6 @@ public class PedidosCalibracaoUseCase {
         return pedidosCalibracaoResponse;
     }
 
-    public void persistirDados(PedidosCalibracaoRequest request, Usuario cliente, PedidosCalibracaoResponse response){
-        PedidosCalibracao pedidosCalibracao = new PedidosCalibracao();
-        pedidosCalibracao.setCodigoPedido(response.getCodigoPedido());
-        pedidosCalibracao.setQuantidade(request.getQuantidade());
-        pedidosCalibracao.setDataPedido(LocalDate.now());
-        pedidosCalibracao.setDataCalibracao(inserirDataCalibracao(request));
-        pedidosCalibracao.setCliente(cliente);
-        pedidosCalibracao.setDetectorMarca(request.getDetectorMarca());
-        pedidosCalibracao.setDetectorModelo(request.getDetectorModelo());
-        pedidosCalibracao.setGas(request.getGas());
-        pedidosCalibracao.setNumeroSerie(request.getNumeroSerie());
-        pedidosCalibracao.setRbc(request.isRbc());
-        pedidosCalibracao.setTaxaUrgencia(request.isTaxaUrgencia());
-        pedidosCalibracao.setStatus(StatusPedidosCalibracaoEnum.PENDENTE.getMessage());
-        pedidosCalibracao.setRevisao(0);
-        repository.persist(pedidosCalibracao);
-    }
-
-    public String gerarCodigo(Empresa empresa) {
-        //Gerar código aleatório com 5 chars
-        int len = 5;
-        final String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        SecureRandom random = new SecureRandom();
-        String digitosIniciais = IntStream.range(0, len)
-                .map(i -> random.nextInt(chars.length()))
-                .mapToObj(randomIndex -> String.valueOf(chars.charAt(randomIndex)))
-                .collect(Collectors.joining());
-        //Concatenar com os ultimos dois digitos do CNPJ
-        String digitosFinais = empresa.getCnpj().substring(empresa.getCnpj().length()-2);
-        String barra = "-";
-        return digitosIniciais.concat(barra).concat(digitosFinais);
-    }
-    public String inserirDataCalibracao(PedidosCalibracaoRequest request){
-        if (request.isTaxaUrgencia()){
-            return DATA_CALIBRACAO_COM_URGENCIA;
-        }
-        return DATA_CALIBRACAO_SEM_URGENCIA;
-    }
-
     public PedidosCalibracaoResponse atualizarPedido(String codigoPedido, AtualizarPedidoCalibracaoRequest request){
         validarAtualizarPedidoRequest(request);
         validarCodigoPedido(codigoPedido);
@@ -132,6 +93,7 @@ public class PedidosCalibracaoUseCase {
                 .taxaUrgencia(pedido.isTaxaUrgencia())
                 .valor(pedido.getValor())
                 .revisao(pedido.getRevisao())
+                .proposta(pedido.getProposta())
                 .dataAprovacao(pedido.getDataAprovacao())
                 .dataCancelamento(pedido.getDataCancelamento())
                 .motivoCancelamento(pedido.getMotivoCancelamento())
@@ -151,93 +113,6 @@ public class PedidosCalibracaoUseCase {
                                 .build())
                         .build())
                 .build();
-    }
-    public void atualizarDados(AtualizarPedidoCalibracaoRequest request, PedidosCalibracao pedido){
-        if (!Objects.isNull(request.getDataCalibracao())){
-            pedido.setDataCalibracao(request.getDataCalibracao());}
-        if (!Objects.isNull(request.getCliente())){
-            pedido.setCliente(request.getCliente());}
-        if (!Objects.isNull(request.getDetectorMarca())){
-            pedido.setDetectorMarca(request.getDetectorMarca());}
-        if (!Objects.isNull(request.getDetectorModelo())){
-            pedido.setDetectorModelo(request.getDetectorModelo());}
-        if (!Objects.isNull(request.getGas())){
-            pedido.setGas(request.getGas());}
-        if (!Objects.isNull(request.getNumeroSerie())){
-            pedido.setNumeroSerie(request.getNumeroSerie());}
-        if (request.isRbc()){
-            pedido.setRbc(request.isRbc());}
-        if (request.isTaxaUrgencia()){
-            pedido.setTaxaUrgencia(request.isTaxaUrgencia());}
-        if (!Objects.isNull(request.getRevisao())){
-            pedido.setRevisao(request.getRevisao());}
-        if (!Objects.isNull(request.getProposta())){
-            pedido.setProposta(request.getProposta());}
-        if (!Objects.isNull(request.getProposta())){
-            pedido.setProposta(request.getProposta());}
-        if (!Objects.isNull(request.getStatus())){
-            pedido.setStatus(request.getStatus());}
-    }
-    public void validarCodigoPedido(String codigoPedido){
-        if (codigoPedido==null) {throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_007));}
-
-        PedidosCalibracao pedido = repository.findByCodigo(codigoPedido);
-
-        if (pedido == null) {throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_018));}
-    }
-    public void validarAtualizarPedidoRequest(AtualizarPedidoCalibracaoRequest request) {
-        if (request==null){
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_001));
-        }
-        Set<ConstraintViolation<AtualizarPedidoCalibracaoRequest>> violations = validator.validate(request);
-        if (!violations.isEmpty()) {
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_001));
-        }
-    }
-    public String buscarMensagemStatus(short codigoStatus){
-        if (codigoStatus==(short) 1){
-            return StatusPedidosCalibracaoEnum.PENDENTE.getMessage();
-        }
-        if (codigoStatus==(short) 2){
-            return StatusPedidosCalibracaoEnum.ENVIADA.getMessage();
-        }
-        if (codigoStatus==(short) 3){
-            return StatusPedidosCalibracaoEnum.APROVADA.getMessage();
-        }
-        if (codigoStatus==(short) 4){
-            return StatusPedidosCalibracaoEnum.CANCELADA.getMessage();
-        }
-        if (codigoStatus==(short) 5){
-            return StatusPedidosCalibracaoEnum.FORA_ESCOPO.getMessage();
-        }
-        if (codigoStatus==(short) 6){
-            return StatusPedidosCalibracaoEnum.FINALIZADO.getMessage();
-        }
-        else {
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_015));
-        }
-    }
-    public void validarAltualizarStatusRequest(AtualizarStatusPedidoRequest request) {
-        if (request==null){
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_001));}
-
-        if (request.getStatus()==0) {
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_019));}
-    }
-
-    public void validarFazerPedido(PedidosCalibracaoRequest request, Usuario usuario) {
-        Set<ConstraintViolation<PedidosCalibracaoRequest>> violationsPedido = validator.validate(request);
-        if (request==null){
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_001));}
-
-        if (!violationsPedido.isEmpty()) {
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_001));}
-
-        if (usuario==null){
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_002));}
-
-        if (usuario.getEmpresa()==null){
-            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_003));}
     }
 
     public PedidosCalibracaoResponse atualizarStatus(String codigoPedido, AtualizarStatusPedidoRequest request){
@@ -269,6 +144,7 @@ public class PedidosCalibracaoUseCase {
                 .quantidade(pedido.getQuantidade())
                 .taxaUrgencia(pedido.isTaxaUrgencia())
                 .valor(pedido.getValor())
+                .proposta(pedido.getProposta())
                 .dataCancelamento(pedido.getDataCancelamento())
                 .motivoCancelamento(pedido.getMotivoCancelamento())
                 .revisao(pedido.getRevisao())
@@ -290,6 +166,134 @@ public class PedidosCalibracaoUseCase {
                         .build())
                 .build();
     }
+    public void persistirDados(PedidosCalibracaoRequest request, Usuario cliente, PedidosCalibracaoResponse response){
+        PedidosCalibracao pedidosCalibracao = new PedidosCalibracao();
+        pedidosCalibracao.setCodigoPedido(response.getCodigoPedido());
+        pedidosCalibracao.setQuantidade(request.getQuantidade());
+        pedidosCalibracao.setDataPedido(LocalDate.now());
+        pedidosCalibracao.setDataCalibracao(inserirDataCalibracao(request));
+        pedidosCalibracao.setCliente(cliente);
+        pedidosCalibracao.setDetectorMarca(request.getDetectorMarca());
+        pedidosCalibracao.setDetectorModelo(request.getDetectorModelo());
+        pedidosCalibracao.setGas(request.getGas());
+        pedidosCalibracao.setNumeroSerie(request.getNumeroSerie());
+        pedidosCalibracao.setRbc(request.isRbc());
+        pedidosCalibracao.setTaxaUrgencia(request.isTaxaUrgencia());
+        pedidosCalibracao.setStatus(StatusPedidosCalibracaoEnum.PENDENTE.getMessage());
+        pedidosCalibracao.setRevisao(0);
+        repository.persist(pedidosCalibracao);
+    }
+    public void atualizarDados(AtualizarPedidoCalibracaoRequest request, PedidosCalibracao pedido){
+        if (!Objects.isNull(request.getDataCalibracao())){
+            pedido.setDataCalibracao(request.getDataCalibracao());}
+        if (!Objects.isNull(request.getCliente())){
+            pedido.setCliente(request.getCliente());}
+        if (!Objects.isNull(request.getDetectorMarca())){
+            pedido.setDetectorMarca(request.getDetectorMarca());}
+        if (!Objects.isNull(request.getDetectorModelo())){
+            pedido.setDetectorModelo(request.getDetectorModelo());}
+        if (!Objects.isNull(request.getGas())){
+            pedido.setGas(request.getGas());}
+        if (!Objects.isNull(request.getNumeroSerie())){
+            pedido.setNumeroSerie(request.getNumeroSerie());}
+        if (request.isRbc()){
+            pedido.setRbc(request.isRbc());}
+        if (request.isTaxaUrgencia()){
+            pedido.setTaxaUrgencia(request.isTaxaUrgencia());}
+        if (!Objects.isNull(request.getRevisao())){
+            pedido.setRevisao(request.getRevisao());}
+        if (!Objects.isNull(request.getProposta())){
+            pedido.setProposta(request.getProposta());}
+        if (!Objects.isNull(request.getProposta())){
+            pedido.setProposta(request.getProposta());}
+        if (!Objects.isNull(request.getStatus())){
+            pedido.setStatus(request.getStatus());}
+    }
+
+    public String gerarCodigo(Empresa empresa) {
+        //Gerar código aleatório com 5 chars
+        int len = 5;
+        final String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        SecureRandom random = new SecureRandom();
+        String digitosIniciais = IntStream.range(0, len)
+                .map(i -> random.nextInt(chars.length()))
+                .mapToObj(randomIndex -> String.valueOf(chars.charAt(randomIndex)))
+                .collect(Collectors.joining());
+        //Concatenar com os ultimos dois digitos do CNPJ
+        String digitosFinais = empresa.getCnpj().substring(empresa.getCnpj().length()-2);
+        String barra = "-";
+        return digitosIniciais.concat(barra).concat(digitosFinais);
+    }
+    public String inserirDataCalibracao(PedidosCalibracaoRequest request){
+        if (request.isTaxaUrgencia()){
+            return DATA_CALIBRACAO_COM_URGENCIA;
+        }
+        return DATA_CALIBRACAO_SEM_URGENCIA;
+    }
+
+    public String buscarMensagemStatus(short codigoStatus){
+        if (codigoStatus==(short) 1){
+            return StatusPedidosCalibracaoEnum.PENDENTE.getMessage();
+        }
+        if (codigoStatus==(short) 2){
+            return StatusPedidosCalibracaoEnum.ENVIADA.getMessage();
+        }
+        if (codigoStatus==(short) 3){
+            return StatusPedidosCalibracaoEnum.APROVADA.getMessage();
+        }
+        if (codigoStatus==(short) 4){
+            return StatusPedidosCalibracaoEnum.CANCELADA.getMessage();
+        }
+        if (codigoStatus==(short) 5){
+            return StatusPedidosCalibracaoEnum.FORA_ESCOPO.getMessage();
+        }
+        if (codigoStatus==(short) 6){
+            return StatusPedidosCalibracaoEnum.FINALIZADO.getMessage();
+        }
+        else {
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_015));
+        }
+    }
+
+    public void validarCodigoPedido(String codigoPedido){
+        if (codigoPedido==null) {throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_007));}
+
+        PedidosCalibracao pedido = repository.findByCodigo(codigoPedido);
+
+        if (pedido == null) {throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_018));}
+    }
+    public void validarAtualizarPedidoRequest(AtualizarPedidoCalibracaoRequest request) {
+        if (request==null){
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_001));
+        }
+        Set<ConstraintViolation<AtualizarPedidoCalibracaoRequest>> violations = validator.validate(request);
+        if (!violations.isEmpty()) {
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_001));
+        }
+    }
+
+    public void validarAltualizarStatusRequest(AtualizarStatusPedidoRequest request) {
+        if (request==null){
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_001));}
+
+        if (request.getStatus()==0) {
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_019));}
+    }
+
+    public void validarFazerPedido(PedidosCalibracaoRequest request, Usuario usuario) {
+        Set<ConstraintViolation<PedidosCalibracaoRequest>> violationsPedido = validator.validate(request);
+        if (request==null){
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_001));}
+
+        if (!violationsPedido.isEmpty()) {
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_001));}
+
+        if (usuario==null){
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_002));}
+
+        if (usuario.getEmpresa()==null){
+            throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_003));}
+    }
 
     public void validarRegraStatus(AtualizarStatusPedidoRequest request, PedidosCalibracao pedido){
 
@@ -309,12 +313,16 @@ public class PedidosCalibracaoUseCase {
         if (request.getStatus()==(short)4 && !existeMotivoCancelamento){
             throw new CoreRuleException(MessagemResponse.error(MensagemKeyEnum.ID_017));}
 
+        if (request.getStatus()==(short)2){
+            pedido.setProposta(request.getProposta());
+            pedido.setValor(request.getValor());}
+
         if (request.getStatus()==(short)3){
-            pedido.setDataAprovacao(LocalDate.now());
-        }
+            pedido.setDataAprovacao(LocalDate.now());}
+
         if (request.getStatus()==(short)4){
             pedido.setDataCancelamento(LocalDate.now());
-            pedido.setMotivoCancelamento(request.getMotivoCancelamento());
-        }
+            pedido.setMotivoCancelamento(request.getMotivoCancelamento());}
+
     }
 }

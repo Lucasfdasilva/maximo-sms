@@ -20,7 +20,7 @@ codigo INTEGER
 );
 
 insert into status_pedido(descricao, codigo) VALUES ('PROPOSTA PENDENTE', 1);
-insert into status_pedido(descricao, codigo) VALUES ('PROPOSTA ENVIADA', 2;
+insert into status_pedido(descricao, codigo) VALUES ('PROPOSTA ENVIADA', 2);
 insert into status_pedido(descricao, codigo) VALUES ('PROPOSTA APROVADA', 3);
 insert into status_pedido(descricao, codigo) VALUES ('PROPOSTA CANCELADA', 4);
 insert into status_pedido(descricao, codigo) VALUES ('PEDIDO FORA DO ESCOPO', 5);
