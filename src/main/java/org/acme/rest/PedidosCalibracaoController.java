@@ -1,6 +1,5 @@
 package org.acme.rest;
 
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import org.acme.dtos.*;
 import org.acme.entities.PedidosCalibracao;
 import org.acme.repository.PedidosCalibracaoRepository;
